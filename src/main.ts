@@ -2,8 +2,8 @@ import './style.css'
 
 // canvas
 const canvas = document.createElement("canvas")
-canvas.width = 300
-canvas.height = 300
+canvas.width = 3000
+canvas.height = 3000
 document.querySelector("body")?.append(canvas)
 
 // gl
@@ -21,13 +21,14 @@ void main(){
 `
 
 const fs = `#version 300 es
-
 precision highp float;
+
+uniform vec2 u_res;
 
 out vec4 outColor; 
 
 void main(){
-  outColor = vec4(1.0,0.0,0.0,1.0);
+  outColor = vec4(gl_FragCoord.xy/u_res,0.0,1.0);
 }
 `
 
@@ -36,16 +37,17 @@ const program = createProgram(gl, vs, fs)
 
 // Location
 const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
+const resUniformLocation = gl.getUniformLocation(program, "u_res")
 
 // buffer
 const buffer = gl.createBuffer()
-gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 
 // vertex array object
 const vao = gl.createVertexArray()
 gl.bindVertexArray(vao)
 
 // vertex attrib
+gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0)
 gl.enableVertexAttribArray(positionAttributeLocation)
 
@@ -54,6 +56,7 @@ gl.enableVertexAttribArray(positionAttributeLocation)
 
 // program use
 gl.useProgram(program)
+gl.uniform2fv(resUniformLocation, [gl.canvas.width, gl.canvas.height]);
 gl.bindVertexArray(vao)
 
 // Buffer
@@ -82,7 +85,7 @@ function createShader(gl: WebGLRenderingContext, source: string, shaderType: typ
   gl.compileShader(shader)
 
   // TEST
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error("Error compiling shader. Info: " + gl.getShaderInfoLog(shader))
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(`Error compiling shader. Shader type: ${shaderType} Info: ` + gl.getShaderInfoLog(shader))
 
   return shader
 }
