@@ -14,8 +14,12 @@ if (!gl) throw new Error("webgl not supported. Info: " + gl)
 const vs = `#version 300 es
 
 in vec2 a_position;
+in vec4 a_color;
 
-void main(){  
+out vec4 v_color;
+
+void main(){
+  v_color = a_color;
   gl_Position = vec4(a_position,0.0,1.0);
 }
 `
@@ -23,12 +27,13 @@ void main(){
 const fs = `#version 300 es
 precision highp float;
 
-uniform vec2 u_res;
+in vec4 v_color;
 
+uniform vec2 u_res;
 out vec4 outColor; 
 
 void main(){
-  outColor = vec4(gl_FragCoord.xy/u_res,0.0,1.0);
+  outColor = v_color;
 }
 `
 
@@ -38,20 +43,26 @@ const program = createProgram(gl, vs, fs)
 // Location
 const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
 const resUniformLocation = gl.getUniformLocation(program, "u_res")
+const colorAttributeLocation = gl.getAttribLocation(program, "a_color")
 
 // buffer
-const buffer = gl.createBuffer()
+const positionBuffer = gl.createBuffer()
+const colorBuffer = gl.createBuffer()
 
 // vertex array object
 const vao = gl.createVertexArray()
 gl.bindVertexArray(vao)
 
 // vertex attrib
-gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+// POSITION
+gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
 gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0)
 gl.enableVertexAttribArray(positionAttributeLocation)
 
-
+// COLOR
+gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+gl.vertexAttribPointer(colorAttributeLocation, 4, gl.FLOAT, false, 0, 0)
+gl.enableVertexAttribArray(colorAttributeLocation)
 
 
 // program use
@@ -64,11 +75,16 @@ const positions = [
   0, 0,
   0.5, 0.5,
   0.5, 1,
-  1, 1,
-  -1, 1,
-  -1, -1
 ]
+const colors = [
+  1, 0, 0, 1,
+  1, 0, 0, 1,
+  1, 0, 0, 1,
+]
+gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
+gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
 
 // enable
 gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2)
