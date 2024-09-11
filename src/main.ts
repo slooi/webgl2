@@ -61,7 +61,7 @@ gl.enableVertexAttribArray(positionAttributeLocation)
 
 // COLOR
 gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
-gl.vertexAttribPointer(colorAttributeLocation, 4, gl.FLOAT, false, 0, 0)
+gl.vertexAttribPointer(colorAttributeLocation, 4, gl.UNSIGNED_BYTE, true, 0, 0)
 gl.enableVertexAttribArray(colorAttributeLocation)
 
 
@@ -77,14 +77,14 @@ const positions = [
   0.5, 1,
 ]
 const colors = [
-  1, 0, 0, 1,
-  1, 0, 0, 1,
-  1, 0, 0, 1,
+  255, 0, 0, 255,
+  255, 0, 0, 255,
+  255, 0, 0, 255,
 ]
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
 gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW)
 
 // enable
 gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2)
