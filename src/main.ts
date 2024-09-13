@@ -18,14 +18,15 @@ in vec4 a_color;
 
 uniform vec2 u_res;
 uniform vec2 u_rot;
+uniform vec2 u_scale;
 
 out vec4 v_color;
 
 void main(){
   v_color = a_color;
-  float x = a_position.x * u_rot.x - a_position.y * u_rot.y;
-  float y = a_position.y * u_rot.x + a_position.x * u_rot.y ;
-  gl_Position = vec4(2.0*x/u_res.x-1.0,2.0*-y/u_res.y+1.0,0.0,1.0);
+  float x = a_position.x * u_scale.x * u_rot.x - a_position.y * u_scale.y * u_rot.y;
+  float y = a_position.y * u_scale.y * u_rot.x + a_position.x * u_scale.x * u_rot.y;
+  gl_Position = vec4((2.0*x)/u_res.x-1.0,2.0*-y/u_res.y+1.0,0.0,1.0);
 }
 `
 
@@ -48,6 +49,7 @@ const program = createProgram(gl, vs, fs)
 const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
 const resUniformLocation = gl.getUniformLocation(program, "u_res")
 const u_rotLoc = gl.getUniformLocation(program, "u_rot")
+const u_scaleLoc = gl.getUniformLocation(program, "u_scale")
 const colorAttributeLocation = gl.getAttribLocation(program, "a_color")
 
 // buffer
@@ -75,6 +77,7 @@ gl.useProgram(program)
 gl.uniform2fv(resUniformLocation, [gl.canvas.width, gl.canvas.height]);
 const angle = 0
 gl.uniform2fv(u_rotLoc, [Math.cos(angle / 180 * Math.PI), Math.sin(angle / 180 * Math.PI)]);
+gl.uniform2fv(u_scaleLoc, [1, 1])
 gl.bindVertexArray(vao)
 
 // Buffer
