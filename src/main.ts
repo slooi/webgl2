@@ -2,8 +2,8 @@ import './style.css'
 
 // canvas
 const canvas = document.createElement("canvas")
-canvas.width = 3000
-canvas.height = 3000
+canvas.width = 300
+canvas.height = 300
 document.querySelector("body")?.append(canvas)
 
 // gl
@@ -16,11 +16,13 @@ const vs = `#version 300 es
 in vec2 a_position;
 in vec4 a_color;
 
+uniform vec2 u_res;
+
 out vec4 v_color;
 
 void main(){
   v_color = a_color;
-  gl_Position = vec4(a_position,0.0,1.0);
+  gl_Position = vec4(2.0*a_position.x/u_res.x-1.0,2.0*-a_position.y/u_res.y+1.0,0.0,1.0);
 }
 `
 
@@ -29,7 +31,6 @@ precision highp float;
 
 in vec4 v_color;
 
-uniform vec2 u_res;
 out vec4 outColor; 
 
 void main(){
@@ -73,8 +74,8 @@ gl.bindVertexArray(vao)
 // Buffer
 const positions = [
   0, 0,
-  0.5, 0.5,
-  0.5, 1,
+  300, 0,
+  295, 300 / 10,
 ]
 const colors = [
   255, 0, 0, 255,
@@ -85,6 +86,7 @@ gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
 gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
 gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW)
+gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
 // enable
 gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2)
