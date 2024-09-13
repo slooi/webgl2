@@ -24,9 +24,9 @@ out vec4 v_color;
 
 void main(){
   v_color = a_color;
-  float x = a_position.x * u_scale.x * u_rot.x - a_position.y * u_scale.y * u_rot.y;
-  float y = a_position.y * u_scale.y * u_rot.x + a_position.x * u_scale.x * u_rot.y;
-  gl_Position = vec4((2.0*x)/u_res.x-1.0,2.0*-y/u_res.y+1.0,0.0,1.0);
+  vec2 scaledPos = a_position * u_scale;
+  vec2 rotatedPos = vec2(scaledPos.x * u_rot.x - scaledPos.y * u_rot.y, scaledPos.y * u_rot.x + scaledPos.x * u_rot.y);
+  gl_Position = vec4((2.0*rotatedPos.x)/u_res.x-1.0,2.0*-rotatedPos.y/u_res.y+1.0,0.0,1.0);
 }
 `
 
