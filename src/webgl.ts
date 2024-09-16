@@ -1,7 +1,7 @@
-export function createWebglRenderer() {
+export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
 	// canvas
-	const canvas = document.querySelector("canvas") as HTMLCanvasElement
+	// const canvas = document.querySelector("canvas") as HTMLCanvasElement
 	canvas.width = 300
 	canvas.height = 300
 	// document.querySelector("body")?.append(canvas)
@@ -66,13 +66,13 @@ export function createWebglRenderer() {
 
 	// program use
 	gl.useProgram(program)
-	var matrix = m3.identity()
-	matrix = m3.rotation(0)
-	matrix = m3.dot(m3.translation(0, 0), matrix)
-	matrix = m3.dot(m3.projection(canvas.width, canvas.height), matrix)
+	var transformMatrix = m3.identity()
+	transformMatrix = m3.rotation(0)
+	transformMatrix = m3.dot(m3.translation(0, 0), transformMatrix)
+	transformMatrix = m3.dot(m3.projection(canvas.width, canvas.height), transformMatrix)
 
 	// matrix = m3.dot(, matrix)  
-	gl.uniformMatrix3fv(u_matrixLoc, true, matrix)
+	gl.uniformMatrix3fv(u_matrixLoc, true, transformMatrix)
 	gl.bindVertexArray(vao)
 
 	// Buffer
@@ -92,15 +92,29 @@ export function createWebglRenderer() {
 	gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW)
 	gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
-
+	gl.clearColor(1, 1, 1, 1)
+	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
 	gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2)
-	return {
-		draw: () => {
 
-			// enable
+	const api = {
+		clear: () => gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT),
+		draw: () => {
+			// Apply projection matrix and upload to gpu
+			transformMatrix = m3.dot(m3.projection(canvas.width, canvas.height), transformMatrix)
+			gl.uniformMatrix3fv(u_matrixLoc, true, transformMatrix)
+
+			// Draw
 			gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2)
-		}
+
+			// Reset matrix
+			transformMatrix = m3.identity()
+		},
+		scale: (sx: number, sy: number) => transformMatrix = m3.dot(m3.scale(sx, sy), transformMatrix),
+		translate: (tx: number, ty: number) => transformMatrix = m3.dot(m3.translation(tx, ty), transformMatrix),
+		rotate: (degrees: number) => transformMatrix = m3.dot(m3.rotation(degrees), transformMatrix)
 	}
+
+	return api
 }
 
 /* 
