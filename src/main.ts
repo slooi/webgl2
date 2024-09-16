@@ -151,7 +151,7 @@ gl.useProgram(program)
 console.log(m3.scale(1, 1))
 var matrix = m3.identity()
 matrix = m3.rotation(0)
-matrix = m3.dot(m3.translation(100, 100), matrix)
+matrix = m3.dot(m3.translation(0, 0), matrix)
 matrix = m3.dot(m3.projection(), matrix)
 
 // matrix = m3.dot(, matrix)  
