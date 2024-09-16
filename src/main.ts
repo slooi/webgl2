@@ -3,7 +3,7 @@ import './style.css'
 // canvas
 const canvas = document.createElement("canvas")
 canvas.width = 300
-canvas.height = 200
+canvas.height = 300
 document.querySelector("body")?.append(canvas)
 
 // gl
@@ -16,17 +16,13 @@ const vs = `#version 300 es
 in vec2 a_position;
 in vec4 a_color;
 
-uniform vec2 u_res;
-uniform vec2 u_rot;
-uniform vec2 u_scale;
+uniform mat3 u_matrix;
 
 out vec4 v_color;
 
 void main(){
   v_color = a_color;
-  vec2 scaledPos = a_position * u_scale;
-  vec2 rotatedPos = vec2(scaledPos.x * u_rot.x - scaledPos.y * u_rot.y, scaledPos.y * u_rot.x + scaledPos.x * u_rot.y);
-  gl_Position = vec4((2.0*rotatedPos.x)/u_res.x-1.0,2.0*-rotatedPos.y/u_res.y+1.0,0.0,1.0);
+  gl_Position = vec4((u_matrix*vec3(a_position,1.0)).xy,0.0,1.0);
 }
 `
 
@@ -42,15 +38,93 @@ void main(){
 }
 `
 
+
+const m3 = {
+  identity: () => {
+    return new Float32Array([
+      1, 0, 0,
+      0, 1, 0,
+      0, 0, 1
+    ])
+  },
+  scale: (scaleX: number, scaleY: number) => {
+    return new Float32Array([
+      scaleX, 0, 0,
+      0, scaleY, 0,
+      0, 0, 1
+    ])
+  },
+  translation: (translateX: number, translateY: number) => {
+    return new Float32Array([
+      1, 0, translateX,
+      0, 1, translateY,
+      0, 0, 1
+    ])
+  },
+  rotation: (degrees: number) => {
+    const cos = Math.cos(degrees / 180 * Math.PI)
+    const sin = Math.sin(degrees / 180 * Math.PI)
+    return new Float32Array([
+      cos, -sin, 0,
+      sin, cos, 0,
+      0, 0, 1
+    ])
+  },
+  dot: (m0: Float32Array, m1: Float32Array) => {
+    const newMatrix = new Float32Array(9)
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        let sum = 0
+        for (let k = 0; k < 3; k++) {
+          sum += m0[i * 3 + k] * m1[k * 3 + j]
+        }
+        newMatrix[i * 3 + j] = sum
+      }
+    }
+    return newMatrix
+  },
+  isEqual: (m0: Float32Array, m1: Float32Array) => {
+    if (m0.length !== m1.length) {
+      console.log(m0, m1)
+      return false
+    }
+    for (let i = 0; i < m0.length; i++) {
+      if (m0[i] !== m1[i]) {
+        console.log(m0, m1)
+        return false
+      }
+    }
+    return true
+  },
+  projection: () => {
+    return new Float32Array([
+      2 / canvas.width, 0, 0,
+      0, -2 / canvas.height, 0,
+      0, 0, 1
+    ])
+  },
+  transpose: (m: Float32Array) => {
+    return new Float32Array([
+      m[0 * 3 + 0], m[1 * 3 + 0], m[2 * 3 + 0],
+      m[0 * 3 + 1], m[1 * 3 + 1], m[2 * 3 + 1],
+      m[0 * 3 + 2], m[1 * 3 + 2], m[2 * 3 + 2],
+    ])
+  }
+}
+// console.log(m3.isEqual(m3.dot(m3.scale(1, 1), m3.identity()), new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1])))
+// console.log(m3.isEqual(m3.dot(m3.scale(2, 2), m3.identity()), new Float32Array([2, 0, 0, 0, 2, 0, 0, 0, 1])))
+// console.log(m3.isEqual(m3.dot(m3.scale(2, 2), m3.identity()), new Float32Array([1, 0, 0, 0, 2, 0, 0, 0, 1])) === false)
+// console.log(m3.isEqual(m3.dot(m3.rotation(90), m3.identity()), new Float32Array([0, 1, 0, -1, 0, 0, 0, 0, 1])))
+// console.log(m3.isEqual(m3.dot(m3.translation(5, 2), m3.identity()), new Float32Array([1, 0, 5, 0, 1, 2, 0, 0, 1])))
+
+
 // Program
 const program = createProgram(gl, vs, fs)
 
 // Location
 const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
-const resUniformLocation = gl.getUniformLocation(program, "u_res")
-const u_rotLoc = gl.getUniformLocation(program, "u_rot")
-const u_scaleLoc = gl.getUniformLocation(program, "u_scale")
 const colorAttributeLocation = gl.getAttribLocation(program, "a_color")
+const u_matrixLoc = gl.getUniformLocation(program, "u_matrix")
 
 // buffer
 const positionBuffer = gl.createBuffer()
@@ -74,17 +148,21 @@ gl.enableVertexAttribArray(colorAttributeLocation)
 
 // program use
 gl.useProgram(program)
-gl.uniform2fv(resUniformLocation, [gl.canvas.width, gl.canvas.height]);
-const angle = 0
-gl.uniform2fv(u_rotLoc, [Math.cos(angle / 180 * Math.PI), Math.sin(angle / 180 * Math.PI)]);
-gl.uniform2fv(u_scaleLoc, [1, 1])
+console.log(m3.scale(1, 1))
+var matrix = m3.identity()
+matrix = m3.rotation(0)
+matrix = m3.dot(m3.translation(100, 100), matrix)
+matrix = m3.dot(m3.projection(), matrix)
+
+// matrix = m3.dot(, matrix)  
+gl.uniformMatrix3fv(u_matrixLoc, true, matrix)
 gl.bindVertexArray(vao)
 
 // Buffer
 const positions = [
   0, 0,
   300, 0,
-  295, 300 / 10,
+  300, 290,
 ]
 const colors = [
   255, 0, 0, 255,
@@ -130,5 +208,4 @@ function createProgram(gl: WebGLRenderingContext, vs: string, fs: string) {
 
   return program
 }
-
 
