@@ -1,10 +1,21 @@
-import './style.css'
+import './App.css'
+import React from 'react'
+
+function App() {
+  return (
+    <>
+      <canvas></canvas>
+    </>
+  )
+}
+
+
 
 // canvas
-const canvas = document.createElement("canvas")
+const canvas = document.querySelector("canvas") as HTMLCanvasElement
 canvas.width = 300
 canvas.height = 300
-document.querySelector("body")?.append(canvas)
+// document.querySelector("body")?.append(canvas)
 
 // gl
 let gl = canvas.getContext("webgl2")
@@ -209,3 +220,6 @@ function createProgram(gl: WebGLRenderingContext, vs: string, fs: string) {
   return program
 }
 
+
+
+export default App
