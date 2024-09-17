@@ -31,3 +31,4 @@ const positions3d = [
 ]
 ```
 - Make sure to use for loops for m3.dot so it can scale to m4.dot super easily
+- Iterate quickly by testing that rotationZ works before doing the other rotations
