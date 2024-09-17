@@ -11,16 +11,16 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
 	// shaders
 	const vs = `#version 300 es
-		in vec2 a_position;
+		in vec4 a_position;
 		in vec4 a_color;
 
-		uniform mat3 u_matrix;
+		uniform mat4 u_matrix;
 
 		out vec4 v_color;
 
 		void main(){
-		v_color = a_color;
-		gl_Position = vec4((u_matrix*vec3(a_position,1.0)).xy,0.0,1.0);
+			v_color = a_color;
+			gl_Position = u_matrix * a_position;
 		}
 	`
 
@@ -32,7 +32,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		out vec4 outColor; 
 
 		void main(){
-		outColor = v_color;
+			outColor = v_color;
 		}
 	`
 
@@ -55,7 +55,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	// vertex attrib
 	// POSITION
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-	gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0)
+	gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0)
 	gl.enableVertexAttribArray(positionAttributeLocation)
 
 	// COLOR
@@ -66,20 +66,20 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
 	// program use
 	gl.useProgram(program)
-	var transformMatrix = m3.identity()
-	transformMatrix = m3.rotation(0)
-	transformMatrix = m3.dot(m3.translation(0, 0), transformMatrix)
-	transformMatrix = m3.dot(m3.projection(canvas.width, canvas.height), transformMatrix)
+	var transformMatrix = m4.identity()
+	transformMatrix = m4.rotationZ(0)
+	transformMatrix = m4.dot(m4.translation(0, 0, 0), transformMatrix)
+	transformMatrix = m4.dot(m4.projection(canvas.width, canvas.height, canvas.height), transformMatrix)
 
-	// matrix = m3.dot(, matrix)  
-	gl.uniformMatrix3fv(u_matrixLoc, true, transformMatrix)
+	// matrix = m4.dot(, matrix)  
+	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 	gl.bindVertexArray(vao)
 
 	// Buffer
 	const positions = [
-		0, 0,
-		300, 0,
-		290, 300,
+		0, 0, 0,
+		300, 0, 0,
+		290, 300, 0,
 	]
 	const colors = [
 		255, 0, 0, 255,
@@ -94,24 +94,25 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
 	gl.clearColor(1, 1, 1, 1)
 	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-	gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2)
+	gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3)
+	console.log("ran!!!")
 
 	const api = {
 		clear: () => gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT),
 		draw: () => {
 			// Apply projection matrix and upload to gpu
-			transformMatrix = m3.dot(m3.projection(canvas.width, canvas.height), transformMatrix)
-			gl.uniformMatrix3fv(u_matrixLoc, true, transformMatrix)
+			transformMatrix = m4.dot(m4.projection(canvas.width, canvas.height, canvas.height), transformMatrix)
+			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 
 			// Draw
-			gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2)
+			gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3)
 
 			// Reset matrix
-			transformMatrix = m3.identity()
+			transformMatrix = m4.identity()
 		},
-		scale: (sx: number, sy: number) => transformMatrix = m3.dot(m3.scale(sx, sy), transformMatrix),
-		translate: (tx: number, ty: number) => transformMatrix = m3.dot(m3.translation(tx, ty), transformMatrix),
-		rotate: (degrees: number) => transformMatrix = m3.dot(m3.rotation(degrees), transformMatrix)
+		scale: (sx: number, sy: number) => transformMatrix = m4.dot(m4.scale(sx, sy, 1), transformMatrix),
+		translate: (tx: number, ty: number) => transformMatrix = m4.dot(m4.translation(tx, ty, 0), transformMatrix),
+		rotate: (degrees: number) => transformMatrix = m4.dot(m4.rotationZ(degrees), transformMatrix)
 	}
 
 	return api
@@ -153,46 +154,50 @@ function createProgram(gl: WebGLRenderingContext, vs: string, fs: string) {
 
 
 /* HELPER FUNCTIONS */
-const m3 = {
+const m4 = {
 	identity: () => {
 		return new Float32Array([
-			1, 0, 0,
-			0, 1, 0,
-			0, 0, 1
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
 		])
 	},
-	scale: (scaleX: number, scaleY: number) => {
+	scale: (scaleX: number, scaleY: number, scaleZ: number) => {
 		return new Float32Array([
-			scaleX, 0, 0,
-			0, scaleY, 0,
-			0, 0, 1
+			scaleX, 0, 0, 0,
+			0, scaleY, 0, 0,
+			0, 0, scaleZ, 0,
+			0, 0, 0, 1
 		])
 	},
-	translation: (translateX: number, translateY: number) => {
+	translation: (translateX: number, translateY: number, translateZ: number) => {
 		return new Float32Array([
-			1, 0, translateX,
-			0, 1, translateY,
-			0, 0, 1
+			1, 0, 0, translateX,
+			0, 1, 0, translateY,
+			0, 0, 1, translateZ,
+			0, 0, 0, 1
 		])
 	},
-	rotation: (degrees: number) => {
+	rotationZ: (degrees: number) => {
 		const cos = Math.cos(degrees / 180 * Math.PI)
 		const sin = Math.sin(degrees / 180 * Math.PI)
 		return new Float32Array([
-			cos, -sin, 0,
-			sin, cos, 0,
-			0, 0, 1
+			cos, -sin, 0, 0,
+			sin, cos, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
 		])
 	},
 	dot: (m0: Float32Array, m1: Float32Array) => {
-		const newMatrix = new Float32Array(9)
-		for (let i = 0; i < 3; i++) {
-			for (let j = 0; j < 3; j++) {
+		const newMatrix = new Float32Array(16)
+		for (let i = 0; i < 4; i++) {
+			for (let j = 0; j < 4; j++) {
 				let sum = 0
-				for (let k = 0; k < 3; k++) {
-					sum += m0[i * 3 + k] * m1[k * 3 + j]
+				for (let k = 0; k < 4; k++) {
+					sum += m0[i * 4 + k] * m1[k * 4 + j]
 				}
-				newMatrix[i * 3 + j] = sum
+				newMatrix[i * 4 + j] = sum
 			}
 		}
 		return newMatrix
@@ -210,18 +215,16 @@ const m3 = {
 		}
 		return true
 	},
-	projection: (width: number, height: number) => {
+	projection: (width: number, height: number, depth: number) => {
 		return new Float32Array([
-			2 / width, 0, -1,
-			0, -2 / height, 1,
-			0, 0, 1
-		])
-	},
-	transpose: (m: Float32Array) => {
-		return new Float32Array([
-			m[0 * 3 + 0], m[1 * 3 + 0], m[2 * 3 + 0],
-			m[0 * 3 + 1], m[1 * 3 + 1], m[2 * 3 + 1],
-			m[0 * 3 + 2], m[1 * 3 + 2], m[2 * 3 + 2],
+			2 / width, 0, 0, -1,
+			0, -2 / height, 0, 1,
+			0, 0, 2 / depth, 0,
+			0, 0, 0, 1
+
+			// , 0, -1,
+			// 0, , 1,
+			// 0, 0, 1
 		])
 	}
 }
