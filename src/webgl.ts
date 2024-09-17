@@ -189,6 +189,26 @@ const m4 = {
 			0, 0, 0, 1
 		])
 	},
+	rotationY: (degrees: number) => {
+		const cos = Math.cos(degrees / 180 * Math.PI)
+		const sin = Math.sin(degrees / 180 * Math.PI)
+		return new Float32Array([
+			cos, 0, sin, 0,
+			0, 1, 0, 0,
+			-sin, 0, cos, 0,
+			0, 0, 0, 1
+		])
+	},
+	rotationX: (degrees: number) => {
+		const cos = Math.cos(degrees / 180 * Math.PI)
+		const sin = Math.sin(degrees / 180 * Math.PI)
+		return new Float32Array([
+			1, 0, 0, 0,
+			0, cos, -sin, 0,
+			0, sin, cos, 0,
+			0, 0, 0, 1
+		])
+	},
 	dot: (m0: Float32Array, m1: Float32Array) => {
 		const newMatrix = new Float32Array(16)
 		for (let i = 0; i < 4; i++) {
@@ -219,7 +239,7 @@ const m4 = {
 		return new Float32Array([
 			2 / width, 0, 0, -1,
 			0, -2 / height, 0, 1,
-			0, 0, 2 / depth, 0,
+			0, 0, 2 / depth, 0,	// imo it should be 1/depth instead of 2/depth as that way a triangle the len of the screen can rotate around Z without clipping
 			0, 0, 0, 1
 
 			// , 0, -1,
