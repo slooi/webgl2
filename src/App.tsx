@@ -7,7 +7,7 @@ import { createWebglRenderer } from './webgl'
 
 function App() {
   const [scale, setScale] = useState<number>(1)
-  const [translation, setTranslation] = useState<[number, number]>([0, 0])
+  const [translation, setTranslation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 0, z: 0 })
   const [rotation, setRotation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 0, z: 0 })
 
   const [renderer, setRenderer] = useState<ReturnType<typeof createWebglRenderer> | null>(null)
@@ -28,7 +28,7 @@ function App() {
     renderer.rotateX(rotation.x)
     renderer.rotateY(rotation.y)
     renderer.rotateZ(rotation.z)
-    renderer.translate(translation[0], translation[1])
+    renderer.translate(translation.x, translation.y, translation.z)
     renderer.draw()
   }, [scale, translation, rotation])
 
@@ -45,10 +45,12 @@ function App() {
           <input value={rotation.y} type="range" onChange={e => setRotation(v => ({ ...v, y: Number(e.target.value) }))} min="0" max="300" step="1" />
           <p>rotate Z: {rotation.z}</p>
           <input value={rotation.z} type="range" onChange={e => setRotation(v => ({ ...v, z: Number(e.target.value) }))} min="0" max="300" step="1" />
-          <p>translate x : {translation[0]}</p>
-          <input value={translation[0]} type="range" onChange={e => setTranslation(t => [Number(e.target.value), t[1]])} min="0" max="300" step="1" />
-          <p>translate y : {translation[1]}</p>
-          <input value={translation[1]} type="range" onChange={e => setTranslation(t => [t[0], Number(e.target.value)])} min="0" max="300" step="1" />
+          <p>translate x : {translation.x}</p>
+          <input value={translation.x} type="range" onChange={e => setTranslation(v => ({ ...v, x: Number(e.target.value) }))} min="0" max="300" step="1" />
+          <p>translate y : {translation.y}</p>
+          <input value={translation.y} type="range" onChange={e => setTranslation(v => ({ ...v, y: Number(e.target.value) }))} min="0" max="300" step="1" />
+          <p>translate z : {translation.z}</p>
+          <input value={translation.z} type="range" onChange={e => setTranslation(v => ({ ...v, z: Number(e.target.value) }))} min="0" max="300" step="1" />
         </div>
       </div>
     </>
