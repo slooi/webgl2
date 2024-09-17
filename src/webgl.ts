@@ -112,7 +112,9 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		},
 		scale: (sx: number, sy: number) => transformMatrix = m4.dot(m4.scale(sx, sy, 1), transformMatrix),
 		translate: (tx: number, ty: number) => transformMatrix = m4.dot(m4.translation(tx, ty, 0), transformMatrix),
-		rotate: (degrees: number) => transformMatrix = m4.dot(m4.rotationZ(degrees), transformMatrix)
+		rotateX: (degreeX: number) => transformMatrix = m4.dot(m4.rotationX(degreeX), transformMatrix),
+		rotateY: (degreeY: number) => transformMatrix = m4.dot(m4.rotationY(degreeY), transformMatrix),
+		rotateZ: (degreeZ: number) => transformMatrix = m4.dot(m4.rotationZ(degreeZ), transformMatrix)
 	}
 
 	return api
@@ -183,8 +185,8 @@ const m4 = {
 		const cos = Math.cos(degrees / 180 * Math.PI)
 		const sin = Math.sin(degrees / 180 * Math.PI)
 		return new Float32Array([
-			cos, -sin, 0, 0,
-			sin, cos, 0, 0,
+			cos, sin, 0, 0,
+			-sin, cos, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1
 		])
