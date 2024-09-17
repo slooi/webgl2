@@ -111,7 +111,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 			transformMatrix = m4.identity()
 		},
 		scale: (sx: number, sy: number) => transformMatrix = m4.dot(m4.scale(sx, sy, 1), transformMatrix),
-		translate: (tx: number, ty: number) => transformMatrix = m4.dot(m4.translation(tx, ty, 0), transformMatrix),
+		translate: (tx: number, ty: number, tz: number) => transformMatrix = m4.dot(m4.translation(tx, ty, tz), transformMatrix),
 		rotateX: (degreeX: number) => transformMatrix = m4.dot(m4.rotationX(degreeX), transformMatrix),
 		rotateY: (degreeY: number) => transformMatrix = m4.dot(m4.rotationY(degreeY), transformMatrix),
 		rotateZ: (degreeZ: number) => transformMatrix = m4.dot(m4.rotationZ(degreeZ), transformMatrix)
