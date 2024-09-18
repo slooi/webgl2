@@ -21,8 +21,8 @@ function App() {
     }
   }, [])
   useEffect(() => {
-    console.log("useEffect ran!")
     if (!renderer) return
+    console.log("scale, translation, rotation, originTranslation", scale, translation, rotation, originTranslation)
 
     renderer.clear()
     renderer.scale(scale, scale)
