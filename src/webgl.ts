@@ -1,5 +1,31 @@
 export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
+	const api = {
+		clear: () => {
+			// Reset matrix
+			gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
+
+			// Reset transform
+			transformMatrix = m4.identity()
+		},
+		draw: () => {
+			console.log("DRAW WAS CALLED!")
+			// Apply orthographic matrix and upload to gpu
+			transformMatrix = m4.dot(m4.orthographic(canvas.width, canvas.height, canvas.height), transformMatrix)
+			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
+
+			// Draw
+			gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3)
+		},
+		scale: (sx: number, sy: number) => transformMatrix = m4.dot(m4.scale(sx, sy, 1), transformMatrix),
+		translate: (tx: number, ty: number, tz: number) => transformMatrix = m4.dot(m4.translation(tx, ty, tz), transformMatrix),
+		rotateX: (degreeX: number) => transformMatrix = m4.dot(m4.rotationX(degreeX), transformMatrix),
+		rotateY: (degreeY: number) => transformMatrix = m4.dot(m4.rotationY(degreeY), transformMatrix),
+		rotateZ: (degreeZ: number) => transformMatrix = m4.dot(m4.rotationZ(degreeZ), transformMatrix)
+	}
+
+
+	console.log("createWebglRenderer was called!")
 	// canvas
 	// const canvas = document.querySelector("canvas") as HTMLCanvasElement
 	canvas.width = 300
@@ -62,18 +88,6 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
 	gl.vertexAttribPointer(colorAttributeLocation, 4, gl.UNSIGNED_BYTE, true, 0, 0)
 	gl.enableVertexAttribArray(colorAttributeLocation)
-
-
-	// program use
-	gl.useProgram(program)
-	var transformMatrix = m4.identity()
-	transformMatrix = m4.rotationZ(0)
-	transformMatrix = m4.dot(m4.translation(0, 0, 0), transformMatrix)
-	transformMatrix = m4.dot(m4.orthographic(canvas.width, canvas.height, canvas.height), transformMatrix)
-
-	// matrix = m4.dot(, matrix)  
-	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
-	gl.bindVertexArray(vao)
 
 	// Buffer
 	const positions = [
@@ -244,32 +258,24 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW)
 	gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
+
+	// program use
+	gl.useProgram(program)
+	let transformMatrix = m4.identity()
+	transformMatrix = m4.rotationZ(0)
+	transformMatrix = m4.dot(m4.translation(0, 0, 0), transformMatrix)
+	transformMatrix = m4.dot(m4.orthographic(canvas.width, canvas.height, canvas.height), transformMatrix)
+
+	// matrix = m4.dot(, matrix)  
+	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 	gl.clearColor(1, 1, 1, 1)
 	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
 	gl.enable(gl.CULL_FACE)
 	gl.enable(gl.DEPTH_TEST)
 	gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3)
-	console.log("ran!!!")
 
-	const api = {
-		clear: () => gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT),
-		draw: () => {
-			// Apply orthographic matrix and upload to gpu
-			transformMatrix = m4.dot(m4.orthographic(canvas.width, canvas.height, canvas.height), transformMatrix)
-			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
-
-			// Draw
-			gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3)
-
-			// Reset matrix
-			transformMatrix = m4.identity()
-		},
-		scale: (sx: number, sy: number) => transformMatrix = m4.dot(m4.scale(sx, sy, 1), transformMatrix),
-		translate: (tx: number, ty: number, tz: number) => transformMatrix = m4.dot(m4.translation(tx, ty, tz), transformMatrix),
-		rotateX: (degreeX: number) => transformMatrix = m4.dot(m4.rotationX(degreeX), transformMatrix),
-		rotateY: (degreeY: number) => transformMatrix = m4.dot(m4.rotationY(degreeY), transformMatrix),
-		rotateZ: (degreeZ: number) => transformMatrix = m4.dot(m4.rotationZ(degreeZ), transformMatrix)
-	}
+	// Need to reset identity so next render doesn't contain previous render's transforms
+	transformMatrix = m4.identity()
 
 	return api
 }
@@ -339,8 +345,8 @@ const m4 = {
 		const cos = Math.cos(degrees / 180 * Math.PI)
 		const sin = Math.sin(degrees / 180 * Math.PI)
 		return new Float32Array([
-			cos, sin, 0, 0,
-			-sin, cos, 0, 0,
+			cos, -sin, 0, 0,
+			sin, cos, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1
 		])
@@ -349,9 +355,9 @@ const m4 = {
 		const cos = Math.cos(degrees / 180 * Math.PI)
 		const sin = Math.sin(degrees / 180 * Math.PI)
 		return new Float32Array([
-			cos, 0, sin, 0,
+			cos, 0, -sin, 0,
 			0, 1, 0, 0,
-			-sin, 0, cos, 0,
+			sin, 0, cos, 0,
 			0, 0, 0, 1
 		])
 	},
