@@ -37,7 +37,7 @@ const positions3d = [
 
 # Remember to
 - gl.enable(gl.DEPTH_TEST) and gl.enable(gl.CULL_FACE) <= note you can NOT bit OR them
-
+- remember your rotation transformations will be applied BEFORE the orthographic and perspective transformations. This means if your ortho/perspective transforms flip the positive y axis to be positive going down, you will have to conisder how this will affect the direction of rotation for the rotation transformations
 
 # Notes
 WebGL is concerned, whether or not a triangle is considered to be going clockwise or counter clockwise depends on the vertices of that triangle in clip space. In other words, WebGL figures out whether a triangle is front or back AFTER you've applied math to the vertices in the vertex shader
