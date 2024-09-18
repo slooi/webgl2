@@ -32,3 +32,12 @@ const positions3d = [
 ```
 - Make sure to use for loops for m3.dot so it can scale to m4.dot super easily
 - Iterate quickly by testing that rotationZ works before doing the other rotations
+
+
+
+# Remember to
+- gl.enable(gl.DEPTH_TEST) and gl.enable(gl.CULL_FACE) <= note you can NOT bit OR them
+
+
+# Notes
+WebGL is concerned, whether or not a triangle is considered to be going clockwise or counter clockwise depends on the vertices of that triangle in clip space. In other words, WebGL figures out whether a triangle is front or back AFTER you've applied math to the vertices in the vertex shader
