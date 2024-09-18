@@ -69,7 +69,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	var transformMatrix = m4.identity()
 	transformMatrix = m4.rotationZ(0)
 	transformMatrix = m4.dot(m4.translation(0, 0, 0), transformMatrix)
-	transformMatrix = m4.dot(m4.projection(canvas.width, canvas.height, canvas.height), transformMatrix)
+	transformMatrix = m4.dot(m4.orthographic(canvas.width, canvas.height, canvas.height), transformMatrix)
 
 	// matrix = m4.dot(, matrix)  
 	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
@@ -77,14 +77,166 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
 	// Buffer
 	const positions = [
+		// Length front
 		0, 0, 0,
-		300, 0, 0,
-		290, 300, 0,
+		30, 130, 0,
+		30, 0, 0,
+		0, 0, 0,
+		0, 130, 0,
+		30, 130, 0,
+
+		// length right
+		30, 0, 0,
+		30, 130, 0,
+		30, 130, 30,
+		30, 0, 0,
+		30, 130, 30,
+		30, 0, 30,
+
+		// length back
+		30, 100, 30,
+		60, 130, 30,
+		30, 130, 30,
+		30, 100, 30,
+		60, 100, 30,
+		60, 130, 30,
+
+		// length right
+		0, 0, 0,
+		0, 130, 30,
+		0, 130, 0,
+		0, 0, 0,
+		0, 0, 30,
+		0, 130, 30,
+
+		// protrude front
+		30, 100, 0,
+		30, 130, 0,
+		60, 130, 0,
+		30, 100, 0,
+		60, 130, 0,
+		60, 100, 0,
+
+		// protrude back
+		0, 0, 30,
+		30, 0, 30,
+		30, 130, 30,
+		0, 0, 30,
+		30, 130, 30,
+		0, 130, 30,
+
+		// protrude right
+		60, 100, 0,
+		60, 130, 30,
+		60, 100, 30,
+		60, 100, 0,
+		60, 130, 0,
+		60, 130, 30,
+
+		// protrude top
+		30, 100, 0,
+		60, 100, 0,
+		30, 100, 30,
+		30, 100, 30,
+		60, 100, 0,
+		60, 100, 30,
+
+		// length top
+		0, 0, 0,
+		30, 0, 0,
+		30, 0, 30,
+		0, 0, 0,
+		30, 0, 30,
+		0, 0, 30,
+
+		// bottom l
+		0, 130, 0,
+		60, 130, 30,
+		60, 130, 0,
+		0, 130, 0,
+		0, 130, 30,
+		60, 130, 30,
 	]
 	const colors = [
+		// Length front
 		255, 0, 0, 255,
 		255, 0, 0, 255,
 		255, 0, 0, 255,
+		255, 0, 0, 255,
+		255, 0, 0, 255,
+		255, 0, 0, 255,
+
+		// length right
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+
+		// length back
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+
+		// length left
+		0, 255, 0, 255,
+		0, 255, 0, 255,
+		0, 255, 0, 255,
+		0, 255, 0, 255,
+		0, 255, 0, 255,
+		0, 255, 0, 255,
+
+		// protrude front
+		255, 100, 0, 255,
+		255, 100, 0, 255,
+		255, 100, 0, 255,
+		255, 100, 0, 255,
+		255, 100, 0, 255,
+		255, 100, 0, 255,
+
+		// protrude back
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+
+		// protrude right
+		255, 200, 0, 255,
+		255, 200, 0, 255,
+		255, 200, 0, 255,
+		255, 200, 0, 255,
+		255, 200, 0, 255,
+		255, 200, 0, 255,
+
+		// protrude top
+		0, 200, 255, 255,
+		0, 200, 255, 255,
+		0, 200, 255, 255,
+		0, 200, 255, 255,
+		0, 200, 255, 255,
+		0, 200, 255, 255,
+
+		// length top
+		0, 200, 255, 255,
+		0, 200, 255, 255,
+		0, 200, 255, 255,
+		0, 200, 255, 255,
+		0, 200, 255, 255,
+		0, 200, 255, 255,
+
+		// bottom l
+		255, 100, 255, 255,
+		255, 100, 255, 255,
+		255, 100, 255, 255,
+		255, 100, 255, 255,
+		255, 100, 255, 255,
+		255, 100, 255, 255,
 	]
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
@@ -94,14 +246,16 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
 	gl.clearColor(1, 1, 1, 1)
 	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
+	gl.enable(gl.CULL_FACE)
+	gl.enable(gl.DEPTH_TEST)
 	gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3)
 	console.log("ran!!!")
 
 	const api = {
 		clear: () => gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT),
 		draw: () => {
-			// Apply projection matrix and upload to gpu
-			transformMatrix = m4.dot(m4.projection(canvas.width, canvas.height, canvas.height), transformMatrix)
+			// Apply orthographic matrix and upload to gpu
+			transformMatrix = m4.dot(m4.orthographic(canvas.width, canvas.height, canvas.height), transformMatrix)
 			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 
 			// Draw
@@ -237,7 +391,7 @@ const m4 = {
 		}
 		return true
 	},
-	projection: (width: number, height: number, depth: number) => {
+	orthographic: (width: number, height: number, depth: number) => {
 		return new Float32Array([
 			2 / width, 0, 0, -1,
 			0, -2 / height, 0, 1,
