@@ -41,3 +41,40 @@ const positions3d = [
 
 # Notes
 WebGL is concerned, whether or not a triangle is considered to be going clockwise or counter clockwise depends on the vertices of that triangle in clip space. In other words, WebGL figures out whether a triangle is front or back AFTER you've applied math to the vertices in the vertex shader
+- Use `canvas.clientWidth` instead of `canvas.width` when transforming to clipspace. This is because it ensures that the coordinates you use match the playspace instead of the actual canvas viewport which allows you to do low res renders if needed
+
+# Adding 3d PERSPECTIVE
+- webgl in the glsl code automatically divides x, y and z???(it seems like it?) by w
+- imo the orthographic view should be 1/depth instead of 2/depth as that way a triangle the len of the screen can rotate around Z without clipping
+- When 3d perspective is added, when z is large (>1), the point moves towards the center of the screen as the original CLIPSPACE coords have x=0, y=0 centered in the MIDDLE of the screen and because x'=x/z, y'=y/z. It uses the CLIPSPACE coords as 
+- To get BASIC perspective we divide the x & y by `1.0 + fudgeFactor * position.z`. The `1.0` combined with a `fudgeFactor` set to `0` will create a view identical to the orthographic view. Set fudgeFactor to a val > 0 to start using it. 
+```
+			vec4 position = u_matrix * a_position;
+
+			float divideBy = 1.0 + fudgeFactor * position.z;
+			gl_Position = vec4(position.xyz,divideBy);
+```
+```
+		return new Float32Array([
+			2 / width, 0, 0, -1,
+			0, -2 / height, 0, 1,
+			0, 0, 2 / depth, 0,	// imo it should be 1/depth instead of 2/depth as that way a triangle the len of the screen can rotate around Z without clipping
+			0, 0, 2 / depth * fudgeFactor, 1
+		])
+```
+
+
+- Honestly, i think setup would be a lot less buggy if you implemented 3d without doing the width/height/moving00ToTopLeft stuff
+```
+		return new Float32Array([
+			1 / width, 0, 0, 0,
+			0, 1 / height, 0, 0,
+			0, 0, 2 / depth, 0,
+			0, 0, 2 / depth * fudgeFactor, 1
+		])
+```
+
+
+
+# question
+is there chance to get undefined/nan due to dividing by 0?
