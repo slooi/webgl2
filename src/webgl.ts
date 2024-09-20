@@ -10,14 +10,14 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		},
 		draw: () => {
 			console.log("DRAW WAS CALLED!")
-			// Apply orthographic matrix and upload to gpu
-			transformMatrix = m4.dot(m4.orthographic(canvas.width, canvas.height, canvas.height), transformMatrix)
+			// Apply perspective matrix and upload to gpu
+			transformMatrix = m4.dot(m4.perspective(canvas.clientWidth, canvas.clientHeight, canvas.clientHeight), transformMatrix)
 			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 
 			// Draw
 			gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3)
 		},
-		scale: (sx: number, sy: number) => transformMatrix = m4.dot(m4.scale(sx, sy, 1), transformMatrix),
+		scale: (sx: number, sy: number, sz: number) => transformMatrix = m4.dot(m4.scale(sx, sy, sz), transformMatrix),
 		translate: (tx: number, ty: number, tz: number) => transformMatrix = m4.dot(m4.translation(tx, ty, tz), transformMatrix),
 		rotateX: (degreeX: number) => transformMatrix = m4.dot(m4.rotationX(degreeX), transformMatrix),
 		rotateY: (degreeY: number) => transformMatrix = m4.dot(m4.rotationY(degreeY), transformMatrix),
@@ -31,6 +31,8 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	canvas.width = 300
 	canvas.height = 300
 	// document.querySelector("body")?.append(canvas)
+	canvas.style.width = "300px"
+	canvas.style.height = "300px"
 
 	// gl
 	let gl = getWebglContext(canvas)
@@ -264,7 +266,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	let transformMatrix = m4.identity()
 	transformMatrix = m4.rotationZ(0)
 	transformMatrix = m4.dot(m4.translation(0, 0, 0), transformMatrix)
-	transformMatrix = m4.dot(m4.orthographic(canvas.width, canvas.height, canvas.height), transformMatrix)
+	transformMatrix = m4.dot(m4.perspective(canvas.clientWidth, canvas.clientHeight, canvas.clientHeight), transformMatrix)
 
 	// matrix = m4.dot(, matrix)  
 	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
@@ -407,6 +409,14 @@ const m4 = {
 			// , 0, -1,
 			// 0, , 1,
 			// 0, 0, 1
+		])
+	},
+	perspective: (width: number, height: number, depth: number, fudgeFactor: number = 1) => {
+		return new Float32Array([
+			2 / width, 0, 0, -1,
+			0, -2 / height, 0, 1,
+			0, 0, 2 / depth, 0,	// imo it should be 1/depth instead of 2/depth as that way a triangle the len of the screen can rotate around Z without clipping
+			0, 0, 2 / depth * fudgeFactor, 1
 		])
 	}
 }
