@@ -73,6 +73,7 @@ WebGL is concerned, whether or not a triangle is considered to be going clockwis
 			0, 0, 2 / depth * fudgeFactor, 1
 		])
 ```
+- aspect must be the `canvas.clientWidth / canvas.clientHeight` to ensure that the there's no compression or expansion of the number of pixels on the x axis
 
 
 
