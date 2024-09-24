@@ -1,5 +1,6 @@
-export function createWebglRenderer(canvas: HTMLCanvasElement) {
+import { m4 } from "./m4"
 
+export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	const api = {
 		clear: () => {
 			// Reset matrix
@@ -11,7 +12,8 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		draw: () => {
 			console.log("DRAW WAS CALLED!")
 			// Apply perspective matrix and upload to gpu
-			transformMatrix = m4.dot(m4.perspective(canvas.clientWidth, canvas.clientHeight, canvas.clientHeight), transformMatrix)
+			console.log("transformMatrix", transformMatrix)
+			transformMatrix = m4.dot(m4.perspective3(Math.PI * 0.6666, 1), m4.inverse(transformMatrix))
 			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 
 			// Draw
@@ -23,7 +25,6 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		rotateY: (degreeY: number) => transformMatrix = m4.dot(m4.rotationY(degreeY), transformMatrix),
 		rotateZ: (degreeZ: number) => transformMatrix = m4.dot(m4.rotationZ(degreeZ), transformMatrix)
 	}
-
 
 	console.log("createWebglRenderer was called!")
 	// canvas
@@ -95,83 +96,83 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	const positions = [
 		// Length front
 		0, 0, 0,
-		30, 130, 0,
-		30, 0, 0,
-		0, 0, 0,
-		0, 130, 0,
-		30, 130, 0,
-
-		// length right
 		30, 0, 0,
 		30, 130, 0,
-		30, 130, 30,
-		30, 0, 0,
-		30, 130, 30,
-		30, 0, 30,
-
-		// length back
-		30, 100, 30,
-		60, 130, 30,
-		30, 130, 30,
-		30, 100, 30,
-		60, 100, 30,
-		60, 130, 30,
-
-		// length right
 		0, 0, 0,
-		0, 130, 30,
-		0, 130, 0,
-		0, 0, 0,
-		0, 0, 30,
-		0, 130, 30,
-
-		// protrude front
-		30, 100, 0,
 		30, 130, 0,
-		60, 130, 0,
-		30, 100, 0,
-		60, 130, 0,
-		60, 100, 0,
+		0, 130, 0,
 
-		// protrude back
-		0, 0, 30,
-		30, 0, 30,
-		30, 130, 30,
-		0, 0, 30,
-		30, 130, 30,
-		0, 130, 30,
-
-		// protrude right
-		60, 100, 0,
-		60, 130, 30,
-		60, 100, 30,
-		60, 100, 0,
-		60, 130, 0,
-		60, 130, 30,
-
-		// protrude top
-		30, 100, 0,
-		60, 100, 0,
-		30, 100, 30,
-		30, 100, 30,
-		60, 100, 0,
-		60, 100, 30,
-
-		// length top
-		0, 0, 0,
+		// Protrude front
 		30, 0, 0,
-		30, 0, 30,
-		0, 0, 0,
+		60, 0, 0,
+		60, 30, 0,
+		30, 0, 0,
+		60, 30, 0,
+		30, 30, 0,
+
+		// Length right
+		30, 30, 0,
+		30, 30, 30,
+		30, 130, 30,
+		30, 30, 0,
+		30, 130, 30,
+		30, 130, 0,
+
+		// Protrude right
+		60, 0, 0,
+		60, 0, 30,
+		60, 30, 30,
+		60, 0, 0,
+		60, 30, 30,
+		60, 30, 0,
+
+		// Length back
+		0, 0, 30,
+		30, 130, 30,
 		30, 0, 30,
 		0, 0, 30,
+		0, 130, 30,
+		30, 130, 30,
 
-		// bottom l
-		0, 130, 0,
-		60, 130, 30,
-		60, 130, 0,
+		// Protrude back
+		30, 0, 30,
+		60, 30, 30,
+		60, 0, 30,
+		30, 0, 30,
+		30, 30, 30,
+		60, 30, 30,
+
+		// Length left
+		0, 0, 0,
+		0, 130, 30,
+		0, 0, 30,
+		0, 0, 0,
 		0, 130, 0,
 		0, 130, 30,
-		60, 130, 30,
+
+		// L bottom
+		0, 0, 0,
+		60, 0, 30,
+		60, 0, 0,
+		0, 0, 0,
+		0, 0, 30,
+		60, 0, 30,
+
+		// Length top
+		0, 130, 0,
+		30, 130, 0,
+		30, 130, 30,
+		0, 130, 0,
+		30, 130, 30,
+		0, 130, 30,
+
+		// Protrude top
+		30, 30, 0,
+		60, 30, 0,
+		60, 30, 30,
+		30, 30, 0,
+		60, 30, 30,
+		30, 30, 30,
 	]
 	const colors = [
 		// Length front
@@ -182,23 +183,23 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		255, 0, 0, 255,
 		255, 0, 0, 255,
 
+		// Protrude
+		255, 0, 0, 255,
+		255, 0, 0, 255,
+		255, 0, 0, 255,
+		255, 0, 0, 255,
+		255, 0, 0, 255,
+		255, 0, 0, 255,
+
+		// Protrude right
+		0, 255, 0, 255,
+		0, 255, 0, 255,
+		0, 255, 0, 255,
+		0, 255, 0, 255,
+		0, 255, 0, 255,
+		0, 255, 0, 255,
+
 		// length right
-		255, 255, 0, 255,
-		255, 255, 0, 255,
-		255, 255, 0, 255,
-		255, 255, 0, 255,
-		255, 255, 0, 255,
-		255, 255, 0, 255,
-
-		// length back
-		0, 0, 255, 255,
-		0, 0, 255, 255,
-		0, 0, 255, 255,
-		0, 0, 255, 255,
-		0, 0, 255, 255,
-		0, 0, 255, 255,
-
-		// length left
 		0, 255, 0, 255,
 		0, 255, 0, 255,
 		0, 255, 0, 255,
@@ -206,15 +207,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		0, 255, 0, 255,
 		0, 255, 0, 255,
 
-		// protrude front
-		255, 100, 0, 255,
-		255, 100, 0, 255,
-		255, 100, 0, 255,
-		255, 100, 0, 255,
-		255, 100, 0, 255,
-		255, 100, 0, 255,
-
-		// protrude back
+		// Length back
 		0, 0, 255, 255,
 		0, 0, 255, 255,
 		0, 0, 255, 255,
@@ -222,37 +215,45 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		0, 0, 255, 255,
 		0, 0, 255, 255,
 
-		// protrude right
-		255, 200, 0, 255,
-		255, 200, 0, 255,
-		255, 200, 0, 255,
-		255, 200, 0, 255,
-		255, 200, 0, 255,
-		255, 200, 0, 255,
+		// Protrude back
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
+		0, 0, 255, 255,
 
-		// protrude top
-		0, 200, 255, 255,
-		0, 200, 255, 255,
-		0, 200, 255, 255,
-		0, 200, 255, 255,
-		0, 200, 255, 255,
-		0, 200, 255, 255,
+		// Length left
+		0, 255, 255, 255,
+		0, 255, 255, 255,
+		0, 255, 255, 255,
+		0, 255, 255, 255,
+		0, 255, 255, 255,
+		0, 255, 255, 255,
 
-		// length top
-		0, 200, 255, 255,
-		0, 200, 255, 255,
-		0, 200, 255, 255,
-		0, 200, 255, 255,
-		0, 200, 255, 255,
-		0, 200, 255, 255,
+		// L bottom
+		255, 0, 255, 255,
+		255, 0, 255, 255,
+		255, 0, 255, 255,
+		255, 0, 255, 255,
+		255, 0, 255, 255,
+		255, 0, 255, 255,
 
-		// bottom l
-		255, 100, 255, 255,
-		255, 100, 255, 255,
-		255, 100, 255, 255,
-		255, 100, 255, 255,
-		255, 100, 255, 255,
-		255, 100, 255, 255,
+		// Length top
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+
+		// Protrude top
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
+		255, 255, 0, 255,
 	]
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
@@ -264,9 +265,12 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	// program use
 	gl.useProgram(program)
 	let transformMatrix = m4.identity()
-	transformMatrix = m4.rotationZ(0)
-	transformMatrix = m4.dot(m4.translation(0, 0, 0), transformMatrix)
-	transformMatrix = m4.dot(m4.perspective(canvas.clientWidth, canvas.clientHeight, canvas.clientHeight), transformMatrix)
+	console.log("transformMatrix", transformMatrix)
+	transformMatrix = m4.dot(m4.scale(1.5, 1.5, 1.5), transformMatrix)
+	console.log("transformMatrix2", transformMatrix)
+	transformMatrix = m4.rotationY(30)
+	transformMatrix = m4.dot(m4.translation(0, 0, 100), transformMatrix)
+	transformMatrix = m4.dot(m4.perspective3(Math.PI * 0.6666, 1), transformMatrix)
 
 	// matrix = m4.dot(, matrix)  
 	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
@@ -314,109 +318,4 @@ function createProgram(gl: WebGLRenderingContext, vs: string, fs: string) {
 	if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) throw new Error("ERROR: validating program. Info: " + gl.getProgramInfoLog(program))
 
 	return program
-}
-
-
-/* HELPER FUNCTIONS */
-const m4 = {
-	identity: () => {
-		return new Float32Array([
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1
-		])
-	},
-	scale: (scaleX: number, scaleY: number, scaleZ: number) => {
-		return new Float32Array([
-			scaleX, 0, 0, 0,
-			0, scaleY, 0, 0,
-			0, 0, scaleZ, 0,
-			0, 0, 0, 1
-		])
-	},
-	translation: (translateX: number, translateY: number, translateZ: number) => {
-		return new Float32Array([
-			1, 0, 0, translateX,
-			0, 1, 0, translateY,
-			0, 0, 1, translateZ,
-			0, 0, 0, 1
-		])
-	},
-	rotationZ: (degrees: number) => {
-		const cos = Math.cos(degrees / 180 * Math.PI)
-		const sin = Math.sin(degrees / 180 * Math.PI)
-		return new Float32Array([
-			cos, -sin, 0, 0,
-			sin, cos, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1
-		])
-	},
-	rotationY: (degrees: number) => {
-		const cos = Math.cos(degrees / 180 * Math.PI)
-		const sin = Math.sin(degrees / 180 * Math.PI)
-		return new Float32Array([
-			cos, 0, -sin, 0,
-			0, 1, 0, 0,
-			sin, 0, cos, 0,
-			0, 0, 0, 1
-		])
-	},
-	rotationX: (degrees: number) => {
-		const cos = Math.cos(degrees / 180 * Math.PI)
-		const sin = Math.sin(degrees / 180 * Math.PI)
-		return new Float32Array([
-			1, 0, 0, 0,
-			0, cos, -sin, 0,
-			0, sin, cos, 0,
-			0, 0, 0, 1
-		])
-	},
-	dot: (m0: Float32Array, m1: Float32Array) => {
-		const newMatrix = new Float32Array(16)
-		for (let i = 0; i < 4; i++) {
-			for (let j = 0; j < 4; j++) {
-				let sum = 0
-				for (let k = 0; k < 4; k++) {
-					sum += m0[i * 4 + k] * m1[k * 4 + j]
-				}
-				newMatrix[i * 4 + j] = sum
-			}
-		}
-		return newMatrix
-	},
-	isEqual: (m0: Float32Array, m1: Float32Array) => {
-		if (m0.length !== m1.length) {
-			console.log(m0, m1)
-			return false
-		}
-		for (let i = 0; i < m0.length; i++) {
-			if (m0[i] !== m1[i]) {
-				console.log(m0, m1)
-				return false
-			}
-		}
-		return true
-	},
-	orthographic: (width: number, height: number, depth: number) => {
-		return new Float32Array([
-			2 / width, 0, 0, -1,
-			0, -2 / height, 0, 1,
-			0, 0, 2 / depth, 0,	// imo it should be 1/depth instead of 2/depth as that way a triangle the len of the screen can rotate around Z without clipping
-			0, 0, 0, 1
-
-			// , 0, -1,
-			// 0, , 1,
-			// 0, 0, 1
-		])
-	},
-	perspective: (width: number, height: number, depth: number, fudgeFactor: number = 1) => {
-		return new Float32Array([
-			2 / width, 0, 0, -1,
-			0, -2 / height, 0, 1,
-			0, 0, 2 / depth, 0,	// imo it should be 1/depth instead of 2/depth as that way a triangle the len of the screen can rotate around Z without clipping
-			0, 0, 2 / depth * fudgeFactor, 1
-		])
-	}
 }
