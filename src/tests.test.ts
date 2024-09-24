@@ -1,3 +1,4 @@
+import { m4 } from "./m4"
 
 console.log("############# ITS HERE ##############")
 console.log(m4.mat4ToPreDet3(new Float32Array([
