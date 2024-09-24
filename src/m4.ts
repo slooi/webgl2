@@ -50,8 +50,8 @@ const m4 = {
 		const sin = Math.sin(degrees / 180 * Math.PI)
 		return new Float32Array([
 			1, 0, 0, 0,
-			0, cos, -sin, 0,
-			0, sin, cos, 0,
+			0, cos, sin, 0,
+			0, -sin, cos, 0,
 			0, 0, 0, 1
 		])
 	},
