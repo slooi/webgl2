@@ -8,7 +8,7 @@ import { createWebglRenderer } from './webgl'
 function App() {
   const [scale, setScale] = useState<number>(1)
   const [originTranslation, setOriginTranslation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 0, z: 0 })
-  const [translation, setTranslation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 0, z: 0 })
+  const [translation, setTranslation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 0, z: -50 })
   const [rotation, setRotation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 30, z: 0 })
 
   const [renderer, setRenderer] = useState<ReturnType<typeof createWebglRenderer> | null>(null)
@@ -20,6 +20,24 @@ function App() {
       setTimeout(() => setRenderer(newRenderer), 200)
     }
   }, [])
+  useEffect(() => {
+    const a = async (e: MouseEvent) => {
+      console.log("e", e)
+      await canvasRef.current?.requestPointerLock()
+    };
+    canvasRef.current?.addEventListener("click", a);
+
+    const b: (this: Document, ev: MouseEvent) => any = e => {
+      console.log("e", e.movementX, e.movementY)
+      setRotation(val => { return { x: val.x - e.movementY, y: val.y - e.movementX, z: val.z } })
+    }
+    document.addEventListener("mousemove", b);
+
+    return () => {
+      canvasRef.current?.removeEventListener("click", a)
+      document.removeEventListener("mousemove", b)
+    }
+  }, [canvasRef])
   useEffect(() => {
     if (!renderer) return
     console.log("scale, translation, rotation, originTranslation", scale, translation, rotation, originTranslation)
