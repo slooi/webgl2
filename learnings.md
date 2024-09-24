@@ -74,7 +74,7 @@ WebGL is concerned, whether or not a triangle is considered to be going clockwis
 		])
 ```
 - aspect must be the `canvas.clientWidth / canvas.clientHeight` to ensure that the there's no compression or expansion of the number of pixels on the x axis
-
+- REMEMBER!!!!! WHEN CALCULATING THE adjugate, the there is a transpose!!!!! A_ij = (-1)^(i+j) |M_ji| <= I FORGOT THIS!
 
 
 # question
