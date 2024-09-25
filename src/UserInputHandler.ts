@@ -23,6 +23,13 @@ export class UserInputHandler {
 	on(key: string, cb: (...any: any) => any) {
 		this.subs[key.toLocaleLowerCase()] = cb
 	}
+	removeAll() {
+		console.log("REMOVEALL!")
+		for (const key in this.subs) {
+			// console.log(key)
+			this.keyDown[key] && delete this.keyDown[key]
+		}
+	}
 	tick() {
 		for (const key in this.subs) {
 			// console.log(key)
