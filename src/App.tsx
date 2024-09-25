@@ -1,10 +1,9 @@
 import './App.css'
 import { useEffect, useRef, useState } from 'react'
 import { createWebglRenderer } from './webgl'
-// import { UserInputHandler } from './UserInputHandler'
+import { UserInputHandler } from './UserInputHandler'
 
-// const userInputHandler = new UserInputHandler()
-// userInputHandler.on("w", () => { console.log("asdasd") })
+const userInputHandler = new UserInputHandler()
 
 function App() {
   const [scale, setScale] = useState<number>(1)
@@ -19,6 +18,16 @@ function App() {
     if (canvasRef.current) {
       const newRenderer = createWebglRenderer(canvasRef.current)
       setTimeout(() => setRenderer(newRenderer), 200)
+    }
+
+    userInputHandler.on("w", () => setTranslation(v => ({ x: v.x, y: v.y, z: v.z + 5 })))
+    userInputHandler.on("s", () => setTranslation(v => ({ x: v.x, y: v.y, z: v.z - 5 })))
+    userInputHandler.on("a", () => setTranslation(v => ({ x: v.x - 5, y: v.y, z: v.z })))
+    userInputHandler.on("d", () => setTranslation(v => ({ x: v.x + 5, y: v.y, z: v.z })))
+    userInputHandler.on("q", () => setTranslation(v => ({ x: v.x, y: v.y - 5, z: v.z })))
+    userInputHandler.on("e", () => setTranslation(v => ({ x: v.x, y: v.y + 5, z: v.z })))
+    return () => {
+      userInputHandler.removeAll()
     }
   }, [])
 
@@ -45,8 +54,8 @@ function App() {
     renderer.clear()
     renderer.scale(scale, scale, scale)
     renderer.translate(originTranslation.x, originTranslation.y, originTranslation.z)
-    renderer.rotateY(rotation.y)
     renderer.rotateX(rotation.x)
+    renderer.rotateY(rotation.y)
     renderer.rotateZ(rotation.z)
     renderer.translate(translation.x, translation.y, translation.z)
     renderer.draw()
