@@ -106,7 +106,7 @@ const m4 = {
 			0, 0, 2 / depth * fudgeFactor, 1
 		])
 	},
-	perspective2: (fovRadians: number, aspect: number, zNear: number = 0.1, zFar: number = 300) => {
+	perspective2: (fovRadians: number, aspect: number, zNear: number = 0.01, zFar: number = 1000000) => {
 		/* aspect is assumed to be a value > 1 */
 		const f = Math.tan((Math.PI - fovRadians) / 2)
 		return new Float32Array([
@@ -116,7 +116,7 @@ const m4 = {
 			0, 0, 1, 1
 		])
 	},
-	perspective3: (fovRadians: number, aspect: number, zNear: number = 0.1, zFar: number = 300) => {
+	perspective3: (fovRadians: number, aspect: number, zNear: number = 0.01, zFar: number = 1000000) => {
 		/* aspect is assumed to be a value > 1 */
 		const f = Math.tan((Math.PI - fovRadians) / 2)
 		return new Float32Array([
