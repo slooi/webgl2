@@ -1,9 +1,10 @@
 import './App.css'
 import { useEffect, useRef, useState } from 'react'
 import { createWebglRenderer } from './webgl'
+// import { UserInputHandler } from './UserInputHandler'
 
-
-// const renderer = createWebglRenderer()
+// const userInputHandler = new UserInputHandler()
+// userInputHandler.on("w", () => { console.log("asdasd") })
 
 function App() {
   const [scale, setScale] = useState<number>(1)
@@ -20,24 +21,23 @@ function App() {
       setTimeout(() => setRenderer(newRenderer), 200)
     }
   }, [])
-  useEffect(() => {
-    const a = async (e: MouseEvent) => {
-      console.log("e", e)
-      await canvasRef.current?.requestPointerLock()
-    };
-    canvasRef.current?.addEventListener("click", a);
 
-    const b: (this: Document, ev: MouseEvent) => any = e => {
-      console.log("e", e.movementX, e.movementY)
-      setRotation(val => { return { x: val.x - e.movementY, y: val.y - e.movementX, z: val.z } })
-    }
-    document.addEventListener("mousemove", b);
+  const clickHandler = async (e: MouseEvent) => await canvasRef.current?.requestPointerLock()
+  const mouseMoveHandler = (e: MouseEvent) => {
+    console.log("e", e.movementX, e.movementY)
+    setRotation(val => ({ x: val.x - e.movementY, y: val.y - e.movementX, z: val.z }))
+  }
+
+  useEffect(() => {
+    canvasRef.current?.addEventListener("click", clickHandler);
+    document.addEventListener("mousemove", mouseMoveHandler);
 
     return () => {
-      canvasRef.current?.removeEventListener("click", a)
-      document.removeEventListener("mousemove", b)
+      canvasRef.current?.removeEventListener("click", clickHandler)
+      document.removeEventListener("mousemove", mouseMoveHandler)
     }
   }, [canvasRef])
+
   useEffect(() => {
     if (!renderer) return
     console.log("scale, translation, rotation, originTranslation", scale, translation, rotation, originTranslation)
@@ -45,8 +45,8 @@ function App() {
     renderer.clear()
     renderer.scale(scale, scale, scale)
     renderer.translate(originTranslation.x, originTranslation.y, originTranslation.z)
-    renderer.rotateX(rotation.x)
     renderer.rotateY(rotation.y)
+    renderer.rotateX(rotation.x)
     renderer.rotateZ(rotation.z)
     renderer.translate(translation.x, translation.y, translation.z)
     renderer.draw()
