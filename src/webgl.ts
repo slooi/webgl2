@@ -1,5 +1,33 @@
 import { m4 } from "./m4"
 
+
+// shaders
+const vs = `#version 300 es
+	in vec4 a_position;
+	in vec4 a_color;
+
+	uniform mat4 u_matrix;
+
+	out vec4 v_color;
+
+	void main(){
+		v_color = a_color;
+		gl_Position = u_matrix * a_position;
+	}
+`
+
+const fs = `#version 300 es
+	precision highp float;
+
+	in vec4 v_color;
+
+	out vec4 outColor; 
+
+	void main(){
+		outColor = v_color;
+	}
+`
+
 export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	const api = {
 		clear: () => {
@@ -10,16 +38,15 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 			transformMatrix = m4.identity()
 		},
 		draw: () => {
-			console.log("DRAW WAS CALLED!")
 			// Apply perspective matrix and upload to gpu
-			console.log("transformMatrix", transformMatrix)
+			// console.log("transformMatrix", transformMatrix)
 			transformMatrix = m4.dot(m4.perspective3(Math.PI * 0.6666, 1), m4.inverse(transformMatrix))
 			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 
 			// Draw
 			gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3)
 		},
-		scale: (sx: number, sy: number, sz: number) => transformMatrix = m4.dot(m4.scale(sx, sy, sz), transformMatrix),
+		scale: (sx: number, sy: number, sz: number) => transformMatrix = m4.dot(m4.scaling(sx, sy, sz), transformMatrix),
 		translate: (tx: number, ty: number, tz: number) => transformMatrix = m4.dot(m4.translation(tx, ty, tz), transformMatrix),
 		rotateX: (degreeX: number) => transformMatrix = m4.dot(m4.rotationX(degreeX), transformMatrix),
 		rotateY: (degreeY: number) => transformMatrix = m4.dot(m4.rotationY(degreeY), transformMatrix),
@@ -37,33 +64,6 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
 	// gl
 	let gl = getWebglContext(canvas)
-
-	// shaders
-	const vs = `#version 300 es
-		in vec4 a_position;
-		in vec4 a_color;
-
-		uniform mat4 u_matrix;
-
-		out vec4 v_color;
-
-		void main(){
-			v_color = a_color;
-			gl_Position = u_matrix * a_position;
-		}
-	`
-
-	const fs = `#version 300 es
-		precision highp float;
-
-		in vec4 v_color;
-
-		out vec4 outColor; 
-
-		void main(){
-			outColor = v_color;
-		}
-	`
 
 	// Program
 	const program = createProgram(gl, vs, fs)
@@ -265,9 +265,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	// program use
 	gl.useProgram(program)
 	let transformMatrix = m4.identity()
-	console.log("transformMatrix", transformMatrix)
-	transformMatrix = m4.dot(m4.scale(1.5, 1.5, 1.5), transformMatrix)
-	console.log("transformMatrix2", transformMatrix)
+	transformMatrix = m4.dot(m4.scaling(1.5, 1.5, 1.5), transformMatrix)
 	transformMatrix = m4.rotationY(30)
 	transformMatrix = m4.dot(m4.translation(0, 0, 100), transformMatrix)
 	transformMatrix = m4.dot(m4.perspective3(Math.PI * 0.6666, 1), transformMatrix)

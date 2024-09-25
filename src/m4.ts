@@ -1,6 +1,11 @@
 
 /* HELPER FUNCTIONS */
 const m4 = {
+	scale: (m4x4: Float32Array, sx: number, sy: number, sz: number) => m4x4 = m4.dot(m4.scaling(sx, sy, sz), m4x4),
+	translate: (m4x4: Float32Array, tx: number, ty: number, tz: number) => m4x4 = m4.dot(m4.translation(tx, ty, tz), m4x4),
+	rotateX: (m4x4: Float32Array, degreeX: number) => m4x4 = m4.dot(m4.rotationX(degreeX), m4x4),
+	rotateY: (m4x4: Float32Array, degreeY: number) => m4x4 = m4.dot(m4.rotationY(degreeY), m4x4),
+	rotateZ: (m4x4: Float32Array, degreeZ: number) => m4x4 = m4.dot(m4.rotationZ(degreeZ), m4x4),
 	identity: () => {
 		return new Float32Array([
 			1, 0, 0, 0,
@@ -9,7 +14,7 @@ const m4 = {
 			0, 0, 0, 1
 		])
 	},
-	scale: (scaleX: number, scaleY: number, scaleZ: number) => {
+	scaling: (scaleX: number, scaleY: number, scaleZ: number) => {
 		return new Float32Array([
 			scaleX, 0, 0, 0,
 			0, scaleY, 0, 0,
