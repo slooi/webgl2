@@ -12,13 +12,6 @@ export class UserInputHandler {
 		}
 		document.addEventListener("keydown", (e => handleKey(e, true)))
 		document.addEventListener("keyup", (e => handleKey(e, false)))
-
-
-		const l = () => {
-			this.tick()
-			requestAnimationFrame(l)
-		}
-		l()
 	}
 	on(key: string, cb: (...any: any) => any) {
 		this.subs[key.toLocaleLowerCase()] = cb

@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react'
 import { createWebglRenderer } from './webgl'
 import { UserInputHandler } from './UserInputHandler'
 
-const userInputHandler = new UserInputHandler()
 
 function App() {
   const [scale, setScale] = useState<number>(1)
@@ -20,14 +19,23 @@ function App() {
       setTimeout(() => setRenderer(newRenderer), 200)
     }
 
+
+    const userInputHandler = new UserInputHandler()
     userInputHandler.on("w", () => setTranslation(v => ({ x: v.x, y: v.y, z: v.z + 5 })))
     userInputHandler.on("s", () => setTranslation(v => ({ x: v.x, y: v.y, z: v.z - 5 })))
     userInputHandler.on("a", () => setTranslation(v => ({ x: v.x - 5, y: v.y, z: v.z })))
     userInputHandler.on("d", () => setTranslation(v => ({ x: v.x + 5, y: v.y, z: v.z })))
     userInputHandler.on("q", () => setTranslation(v => ({ x: v.x, y: v.y - 5, z: v.z })))
     userInputHandler.on("e", () => setTranslation(v => ({ x: v.x, y: v.y + 5, z: v.z })))
+    const l = () => {
+      console.log(1)
+      userInputHandler.tick()
+      req = requestAnimationFrame(l)
+    }
+    let req = requestAnimationFrame(l)
     return () => {
       userInputHandler.removeAll()
+      cancelAnimationFrame(req)
     }
   }, [])
 
