@@ -30,7 +30,110 @@ const fs = `#version 300 es
 `
 
 export function createWebglRenderer(canvas: HTMLCanvasElement) {
-	const api = {
+	console.log("createWebglRenderer was called!")
+
+
+	// ########################################################################
+	// 					init canvas/gl
+	// ########################################################################
+	// canvas
+	// const canvas = document.querySelector("canvas") as HTMLCanvasElement
+	canvas.width = 300 * 2 //window.innerWidth
+	canvas.height = 300 * 2 // window.innerHeight
+
+	canvas.style.width = `${canvas.width}px`
+	canvas.style.height = `${canvas.height}px`
+
+	// gl
+	let gl = getWebglContext(canvas)
+
+
+
+	// ########################################################################
+	// 					init program/material for obj
+	// ########################################################################
+	// Program
+	const program = createProgram(gl, vs, fs)
+
+	// Location
+	const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
+	const colorAttributeLocation = gl.getAttribLocation(program, "a_color")
+	const u_matrixLoc = gl.getUniformLocation(program, "u_matrix")
+
+	// buffer
+	const positionBuffer = gl.createBuffer()
+	const colorBuffer = gl.createBuffer()
+
+
+
+	// ########################################################################
+	// 					init attributes for obj
+	// ########################################################################
+	// vertex array object
+	const vao = gl.createVertexArray()
+	gl.bindVertexArray(vao)
+
+	// vertex attrib
+	// POSITION
+	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+	gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0)
+	gl.enableVertexAttribArray(positionAttributeLocation)
+
+	// COLOR
+	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+	gl.vertexAttribPointer(colorAttributeLocation, 4, gl.UNSIGNED_BYTE, true, 0, 0)
+	gl.enableVertexAttribArray(colorAttributeLocation)
+
+
+
+	// ########################################################################
+	// 					init data for obj
+	// ########################################################################
+	// Buffer
+	const positions = modelPlane.positions
+	const colors = modelPlane.colors
+	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
+	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+	gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW)
+	gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+
+
+	// ########################################################################
+	// 					use program (for uniforms + what shader? to use) + use program's uniforms
+	// ########################################################################
+	// program use
+	gl.useProgram(program)
+
+	let transformMatrix = m4.identity()
+	transformMatrix = m4.dot(m4.perspective(Math.PI * 0.6666, 1), m4.rotateY(m4.translate(transformMatrix, 100, 0, 100), 30))
+	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
+
+
+
+	// ########################################################################
+	// 						setup global? state
+	// ########################################################################
+	gl.clearColor(187 / 255, 227 / 255, 248 / 255, 1)
+	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
+	gl.enable(gl.CULL_FACE)
+	gl.enable(gl.DEPTH_TEST)
+
+
+
+	// ########################################################################
+	// 						DRAW :D
+	// ########################################################################
+	gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3)
+
+
+	// ########################################################################
+	// 					clean up + return
+	// ########################################################################
+	// Need to reset identity so next render doesn't contain previous render's transforms
+	transformMatrix = m4.identity()
+	return {
 		clear: () => {
 			// Reset matrix
 			gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
@@ -51,79 +154,6 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		rotateY: (degreeY: number) => transformMatrix = m4.dot(m4.rotationY(degreeY), transformMatrix),
 		rotateZ: (degreeZ: number) => transformMatrix = m4.dot(m4.rotationZ(degreeZ), transformMatrix)
 	}
-
-	console.log("createWebglRenderer was called!")
-	// canvas
-	// const canvas = document.querySelector("canvas") as HTMLCanvasElement
-	canvas.width = 300 * 2 //window.innerWidth
-	canvas.height = 300 * 2 // window.innerHeight
-	// document.querySelector("body")?.append(canvas)
-	canvas.style.width = `${canvas.width}px`
-	canvas.style.height = `${canvas.height}px`
-
-	// gl
-	let gl = getWebglContext(canvas)
-
-	// Program
-	const program = createProgram(gl, vs, fs)
-
-	// Location
-	const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
-	const colorAttributeLocation = gl.getAttribLocation(program, "a_color")
-	const u_matrixLoc = gl.getUniformLocation(program, "u_matrix")
-
-	// buffer
-	const positionBuffer = gl.createBuffer()
-	const colorBuffer = gl.createBuffer()
-
-	// vertex array object
-	const vao = gl.createVertexArray()
-	gl.bindVertexArray(vao)
-
-	// vertex attrib
-	// POSITION
-	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-	gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0)
-	gl.enableVertexAttribArray(positionAttributeLocation)
-
-	// COLOR
-	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
-	gl.vertexAttribPointer(colorAttributeLocation, 4, gl.UNSIGNED_BYTE, true, 0, 0)
-	gl.enableVertexAttribArray(colorAttributeLocation)
-
-	// Buffer
-	const positions = modelPlane.positions
-	const colors = modelPlane.colors
-	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
-	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
-	gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW)
-	gl.bindBuffer(gl.ARRAY_BUFFER, null)
-
-
-	// program use
-	gl.useProgram(program)
-	let transformMatrix = m4.identity()
-	transformMatrix = m4.dot(m4.scaling(1.5, 1.5, 1.5), transformMatrix)
-	transformMatrix = m4.rotationY(30)
-	transformMatrix = m4.dot(m4.translation(0, 0, 100), transformMatrix)
-	transformMatrix = m4.dot(m4.perspective(Math.PI * 0.6666, 1), transformMatrix)
-
-	// matrix = m4.dot(, matrix)  
-	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
-	gl.clearColor(1, 1, 1, 1)
-	gl.clearColor(168 / 255, 205 / 255, 224 / 255, 1)
-	// gl.clearColor(198 / 255, 204 / 255, 204 / 255, 1)
-	gl.clearColor(187 / 255, 227 / 255, 248 / 255, 1)
-	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-	gl.enable(gl.CULL_FACE)
-	gl.enable(gl.DEPTH_TEST)
-	gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3)
-
-	// Need to reset identity so next render doesn't contain previous render's transforms
-	transformMatrix = m4.identity()
-
-	return api
 }
 
 /* 
