@@ -39,9 +39,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 			transformMatrix = m4.identity()
 		},
 		draw: () => {
-			// Apply perspective matrix and upload to gpu
-			// console.log("transformMatrix", transformMatrix)
-			transformMatrix = m4.dot(m4.perspective(Math.PI * 1 / 2, 1), m4.inverse(transformMatrix))
+			transformMatrix = m4.dot(m4.perspective(Math.PI * 0.5, 1), m4.inverse(transformMatrix))
 			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 
 			// Draw

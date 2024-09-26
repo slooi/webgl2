@@ -107,7 +107,6 @@ const m4 = {
 		])
 	},
 	answerPerspective: (fovRadians: number, aspect: number, zNear: number = 0.01, zFar: number = 1000000) => {
-		/* aspect is assumed to be a value > 1 */
 		const f = Math.tan((Math.PI - fovRadians) / 2)
 		return new Float32Array([
 			f / aspect, 0, 0, 0,
@@ -117,7 +116,6 @@ const m4 = {
 		])
 	},
 	perspective: (fovRadians: number, aspect: number, zNear: number = 0.01, zFar: number = 1000000) => {
-		/* aspect is assumed to be a value > 1 */
 		const f = Math.tan((Math.PI - fovRadians) / 2)
 		return new Float32Array([
 			f / aspect, 0, 0, 0,
