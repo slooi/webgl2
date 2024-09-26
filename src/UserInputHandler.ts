@@ -8,7 +8,7 @@ export class UserInputHandler {
 
 		const handleKey = (e: KeyboardEvent, isDown: boolean) => {
 			this.keyDown[e.key.toLocaleLowerCase()] = isDown
-			console.log("asd", this.keyDown)
+			console.log("key pressed:", e.key)
 		}
 		document.addEventListener("keydown", (e => handleKey(e, true)))
 		document.addEventListener("keyup", (e => handleKey(e, false)))
