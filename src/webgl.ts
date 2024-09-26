@@ -464,7 +464,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	  WEBGL FUNCTIONS
 */
 function getWebglContext(canvas: HTMLCanvasElement) {
-	const gl = canvas.getContext("webgl2")
+	const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true }) // !@#!@#!@# remove later maybe
 	if (!gl) throw new Error("ss")
 	return gl
 }
