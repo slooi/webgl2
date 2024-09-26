@@ -56,8 +56,8 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	console.log("createWebglRenderer was called!")
 	// canvas
 	// const canvas = document.querySelector("canvas") as HTMLCanvasElement
-	canvas.width = 300 * 4
-	canvas.height = 300 * 3
+	canvas.width = 300 * 4 //window.innerWidth
+	canvas.height = 300 * 3 // window.innerHeight
 	// document.querySelector("body")?.append(canvas)
 	canvas.style.width = `${canvas.width}px`
 	canvas.style.height = `${canvas.height}px`
@@ -180,10 +180,10 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
 		// Length front
 		100, 0, 100,
-		130 * 50, 0, 100,
-		130 * 50, 130, 100,
+		130 * 25, 0, 100,
+		130 * 25, 130, 100,
 		100, 0, 100,
-		130 * 50, 130, 100,
+		130 * 25, 130, 100,
 		100, 130, 100,
 		// Length left
 		100, 0, 100,
@@ -195,11 +195,11 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
 		// Length top
 		100, 130, 100,
-		130 * 50, 130, 100,
-		130 * 50, 130, 130 * 50,
+		130 * 25, 130, 100,
+		130 * 25, 130, 130 * 25,
 		100, 130, 100,
-		130 * 50, 130, 130 * 50,
-		100, 130, 130 * 50,
+		130 * 25, 130, 130 * 25,
+		100, 130, 130 * 25,
 	]
 	const colors = [
 		// Length front
