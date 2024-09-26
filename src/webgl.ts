@@ -40,7 +40,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		draw: () => {
 			// Apply perspective matrix and upload to gpu
 			// console.log("transformMatrix", transformMatrix)
-			transformMatrix = m4.dot(m4.perspective3(Math.PI * 0.6666, 1), m4.inverse(transformMatrix))
+			transformMatrix = m4.dot(m4.perspective3(Math.PI * 0.6, 1), m4.inverse(transformMatrix))
 			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 
 			// Draw
@@ -56,7 +56,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	console.log("createWebglRenderer was called!")
 	// canvas
 	// const canvas = document.querySelector("canvas") as HTMLCanvasElement
-	canvas.width = 300 * 3
+	canvas.width = 300 * 4
 	canvas.height = 300 * 3
 	// document.querySelector("body")?.append(canvas)
 	canvas.style.width = `${canvas.width}px`
@@ -409,12 +409,13 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		255, 0, 255, 255,
 
 		// Length top
+		27, 84, 75, 255,
+		27, 84, 75, 255,
+		27, 84, 75, 255,
 		187, 200, 118, 255,
 		187, 200, 118, 255,
 		187, 200, 118, 255,
-		187, 200, 118, 255,
-		187, 200, 118, 255,
-		187, 200, 118, 255,
+
 
 		// Protrude top
 		187, 200, 118, 255,
@@ -445,6 +446,9 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	// matrix = m4.dot(, matrix)  
 	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 	gl.clearColor(1, 1, 1, 1)
+	gl.clearColor(168 / 255, 205 / 255, 224 / 255, 1)
+	// gl.clearColor(198 / 255, 204 / 255, 204 / 255, 1)
+	gl.clearColor(187 / 255, 227 / 255, 248 / 255, 1)
 	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
 	gl.enable(gl.CULL_FACE)
 	gl.enable(gl.DEPTH_TEST)
