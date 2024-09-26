@@ -7,8 +7,8 @@ import { UserInputHandler } from './UserInputHandler'
 function App() {
   const [scale, setScale] = useState<number>(1)
   const [originTranslation, setOriginTranslation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 0, z: 0 })
-  const [translation, setTranslation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 0, z: -50 })
-  const [rotation, setRotation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 30, z: 0 })
+  const [translation, setTranslation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 135, z: 0 })
+  const [rotation, setRotation] = useState<{ x: number, y: number, z: number }>({ x: 0, y: 0, z: 0 })
 
   const [renderer, setRenderer] = useState<ReturnType<typeof createWebglRenderer> | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
