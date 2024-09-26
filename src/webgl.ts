@@ -41,7 +41,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		draw: () => {
 			// Apply perspective matrix and upload to gpu
 			// console.log("transformMatrix", transformMatrix)
-			transformMatrix = m4.dot(m4.perspective3(Math.PI * 0.6, 1), m4.inverse(transformMatrix))
+			transformMatrix = m4.dot(m4.perspective(Math.PI * 1 / 2, 1), m4.inverse(transformMatrix))
 			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 
 			// Draw
@@ -57,8 +57,8 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	console.log("createWebglRenderer was called!")
 	// canvas
 	// const canvas = document.querySelector("canvas") as HTMLCanvasElement
-	canvas.width = 300 * 4 //window.innerWidth
-	canvas.height = 300 * 3 // window.innerHeight
+	canvas.width = 300 * 2 //window.innerWidth
+	canvas.height = 300 * 2 // window.innerHeight
 	// document.querySelector("body")?.append(canvas)
 	canvas.style.width = `${canvas.width}px`
 	canvas.style.height = `${canvas.height}px`
@@ -109,7 +109,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	transformMatrix = m4.dot(m4.scaling(1.5, 1.5, 1.5), transformMatrix)
 	transformMatrix = m4.rotationY(30)
 	transformMatrix = m4.dot(m4.translation(0, 0, 100), transformMatrix)
-	transformMatrix = m4.dot(m4.perspective3(Math.PI * 0.6666, 1), transformMatrix)
+	transformMatrix = m4.dot(m4.perspective(Math.PI * 0.6666, 1), transformMatrix)
 
 	// matrix = m4.dot(, matrix)  
 	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)

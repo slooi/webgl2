@@ -98,7 +98,7 @@ const m4 = {
 			// 0, 0, 1
 		])
 	},
-	perspective: (width: number, height: number, depth: number, fudgeFactor: number = 1) => {
+	basicPerspective: (width: number, height: number, depth: number, fudgeFactor: number = 1) => {
 		return new Float32Array([
 			2 / width, 0, 0, -1,
 			0, -2 / height, 0, 1,
@@ -106,7 +106,7 @@ const m4 = {
 			0, 0, 2 / depth * fudgeFactor, 1
 		])
 	},
-	perspective2: (fovRadians: number, aspect: number, zNear: number = 0.01, zFar: number = 1000000) => {
+	answerPerspective: (fovRadians: number, aspect: number, zNear: number = 0.01, zFar: number = 1000000) => {
 		/* aspect is assumed to be a value > 1 */
 		const f = Math.tan((Math.PI - fovRadians) / 2)
 		return new Float32Array([
@@ -116,7 +116,7 @@ const m4 = {
 			0, 0, 1, 1
 		])
 	},
-	perspective3: (fovRadians: number, aspect: number, zNear: number = 0.01, zFar: number = 1000000) => {
+	perspective: (fovRadians: number, aspect: number, zNear: number = 0.01, zFar: number = 1000000) => {
 		/* aspect is assumed to be a value > 1 */
 		const f = Math.tan((Math.PI - fovRadians) / 2)
 		return new Float32Array([
