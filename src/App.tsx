@@ -28,7 +28,6 @@ function App() {
     userInputHandler.on("q", () => setTranslation(v => ({ x: v.x, y: v.y - 5, z: v.z })))
     userInputHandler.on("e", () => setTranslation(v => ({ x: v.x, y: v.y + 5, z: v.z })))
     const l = () => {
-      console.log(1)
       userInputHandler.tick()
       req = requestAnimationFrame(l)
     }
@@ -41,8 +40,7 @@ function App() {
 
   const clickHandler = async (e: MouseEvent) => await canvasRef.current?.requestPointerLock()
   const mouseMoveHandler = (e: MouseEvent) => {
-    console.log("e", e.movementX, e.movementY)
-    setRotation(val => ({ x: val.x - e.movementY, y: val.y - e.movementX, z: val.z }))
+    setRotation(val => ({ x: val.x - e.movementY * 0.25, y: val.y - e.movementX * 0.25, z: val.z }))
   }
 
   useEffect(() => {
@@ -57,7 +55,7 @@ function App() {
 
   useEffect(() => {
     if (!renderer) return
-    console.log("scale, translation, rotation, originTranslation", scale, translation, rotation, originTranslation)
+    // console.log("scale, translation, rotation, originTranslation", scale, translation, rotation, originTranslation)
 
     renderer.clear()
     renderer.scale(scale, scale, scale)
