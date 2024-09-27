@@ -1,18 +1,21 @@
 import { m4 } from "./m4"
 import { modelPlane } from "./model/modelPlane"
-
+import f from "./assets/tex.png"
 
 // shaders
 const vs = `#version 300 es
 	in vec4 a_position;
 	in vec4 a_color;
+	in vec2 a_texcoord;
 
 	uniform mat4 u_matrix;
 
 	out vec4 v_color;
+	out vec2 v_texcoord;
 
 	void main(){
 		v_color = a_color;
+		v_texcoord = a_texcoord;
 		gl_Position = u_matrix * a_position;
 	}
 `
@@ -21,11 +24,14 @@ const fs = `#version 300 es
 	precision highp float;
 
 	in vec4 v_color;
+	in vec2 v_texcoord;
 
 	out vec4 outColor; 
 
+	uniform sampler2D u_texture;
+
 	void main(){
-		outColor = v_color;
+		outColor = texture(u_texture,v_texcoord);
 	}
 `
 
@@ -59,16 +65,18 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
 	const colorAttributeLocation = gl.getAttribLocation(program, "a_color")
 	const u_matrixLoc = gl.getUniformLocation(program, "u_matrix")
+	const texcoordAttributeLocation = gl.getAttribLocation(program, "a_texcoord")
+	const textureUniformLocation = gl.getUniformLocation(program, "u_texture")
 
+
+	// ########################################################################
+	// 					create buffers w/ attributes for obj
+	// ########################################################################
 	// buffer
 	const positionBuffer = gl.createBuffer()
 	const colorBuffer = gl.createBuffer()
+	const texcoordBuffer = gl.createBuffer()
 
-
-
-	// ########################################################################
-	// 					init attributes for obj
-	// ########################################################################
 	// vertex array object
 	const vao = gl.createVertexArray()
 	gl.bindVertexArray(vao)
@@ -78,12 +86,19 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
 	gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0)
 	gl.enableVertexAttribArray(positionAttributeLocation)
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(modelPlane.positions), gl.STATIC_DRAW)
 
 	// COLOR
 	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
 	gl.vertexAttribPointer(colorAttributeLocation, 4, gl.UNSIGNED_BYTE, true, 0, 0)
 	gl.enableVertexAttribArray(colorAttributeLocation)
+	gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(modelPlane.colors), gl.STATIC_DRAW)
 
+	// uv
+	gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer)
+	gl.vertexAttribPointer(texcoordAttributeLocation, 2, gl.FLOAT, false, 0, 0)
+	gl.enableVertexAttribArray(texcoordAttributeLocation)
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(modelPlane.texcoords), gl.STATIC_DRAW)
 
 
 	// ########################################################################
@@ -91,14 +106,28 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	// ########################################################################
 	// Buffer
 	const positions = modelPlane.positions
-	const colors = modelPlane.colors
-	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
-	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
-	gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW)
 	gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
+	// ########################################################################
+	// 					textures
+	// ########################################################################
+	const texture = gl.createTexture()
+	gl.activeTexture(gl.TEXTURE0)
+	gl.bindTexture(gl.TEXTURE_2D, texture)
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]))
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)	// <= YOU WILL GET TEXTURE ARTIFACTS TEXTURE_MIN_FILTER is not set
 
+	var img = new Image()
+	img.src = f
+	img.onload = () => {
+		gl.activeTexture(gl.TEXTURE0)
+		gl.bindTexture(gl.TEXTURE_2D, texture)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+		gl.generateMipmap(gl.TEXTURE_2D)
+	}
+	gl.uniform1i(textureUniformLocation, 0)
 
 	// ########################################################################
 	// 					use program (for uniforms + what shader? to use) + use program's uniforms
