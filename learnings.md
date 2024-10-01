@@ -110,5 +110,25 @@ gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_
 ## Pro factory function
 -
 
+# Renderer organize for the future
+- model:
+ - positions:[]
+ - normals:[]
+ - texcoords:[]
+ - frag:
+ - vertex:
+ - texture:
+- renderer:
+ - loadModel()
+ - currentActiveTexture
+ - currentUseProgram
+ - models: [
+	{
+		a_PositionLocation???
+	}
+ ]
+
+
+
 # question
 is there chance to get undefined/nan due to dividing by 0?
