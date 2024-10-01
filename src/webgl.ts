@@ -35,6 +35,8 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		programUniformLocations: programUniformLocations,
 		...model
 	}
+	const u_matrix = modelContainer.programUniformLocations["u_matrix"]
+	if (!u_matrix) throw new Error("ERROR: u_matrix not defined!")
 	console.log("programAttributeLocations", programAttributeLocations)
 
 	// ########################################################################
@@ -54,7 +56,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	gl.useProgram(program)
 	let transformMatrix = m4.identity()
 	transformMatrix = m4.dot(m4.perspective(Math.PI * 0.6666, 1), m4.rotateY(m4.translate(transformMatrix, 100, 0, 100), 30))
-	gl.uniformMatrix4fv(modelContainer.programUniformLocations["u_matrix"], true, transformMatrix)
+	gl.uniformMatrix4fv(u_matrix, true, transformMatrix)
 
 
 
@@ -89,7 +91,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		},
 		draw: () => {
 			transformMatrix = m4.dot(m4.perspective(Math.PI * 0.5, 1), m4.inverse(transformMatrix))
-			gl.uniformMatrix4fv(modelContainer.programUniformLocations["u_matrix"], true, transformMatrix)
+			gl.uniformMatrix4fv(u_matrix, true, transformMatrix)
 
 			// Draw
 			gl.drawArrays(gl.TRIANGLES, 0, model.vertexData.a_position.data.length / 3)
@@ -125,7 +127,10 @@ function setupModelTexture(gl: WebGL2RenderingContext, modelContainer: { program
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
 		gl.generateMipmap(gl.TEXTURE_2D)
 	}
-	gl.uniform1i(modelContainer.programUniformLocations["u_texture"], 0)
+
+	const location = modelContainer.programUniformLocations["u_texture"]
+	if (location === undefined) throw new Error("ERROR: location does not exist")
+	gl.uniform1i(location, 0)
 
 	return texture
 }
@@ -141,6 +146,8 @@ function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, 
 		if (!vertexAttribute) throw new Error("ERROR: this vertdata does NOT exist!")
 		// Get vertexAttributeArray params
 		const location = modelContainer.programAttributeLocations[name]
+		console.log("location", location)
+		if (location === undefined) throw new Error("ERROR: location is not defined!")
 		const format = vertexAttribute.format
 		const glType = format.type === Float32Array ? gl.FLOAT : format.type === Uint8Array ? gl.UNSIGNED_BYTE : (() => { throw new Error("ERROR: NOT SUPPOSED TYPE WAS USED") })()
 		const normalize = format.normalize
@@ -157,7 +164,7 @@ function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, 
 }
 function getUniformLocationsFromProgram(gl: WebGL2RenderingContext, program: WebGLProgram) {
 	const numberOfUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS)
-	const programUniformLocations: { [name: string]: WebGLUniformLocation } = {}
+	const programUniformLocations: { [name: string]: WebGLUniformLocation | undefined } = {}
 	for (let i = 0; i < numberOfUniforms; i++) {
 		const uniform = gl.getActiveUniform(program, i)
 		console.log("uniformName", uniform?.name)
@@ -173,7 +180,7 @@ function getUniformLocationsFromProgram(gl: WebGL2RenderingContext, program: Web
 }
 function getAttributeLocationsFromProgram(gl: WebGL2RenderingContext, program: WebGLProgram) {
 	const numberOfAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES)
-	const programAttributeLocations: { [name: string]: number } = {}
+	const programAttributeLocations: { [name: string]: number | undefined } = {}
 	for (let i = 0; i < numberOfAttributes; i++) {
 		const attribute = gl.getActiveAttrib(program, i)
 		console.log("attributeName", attribute?.name)
