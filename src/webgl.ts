@@ -28,16 +28,18 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 
 	// Location
 	const programAttributeLocations = getAttributeLocationsFromProgram(gl, program)
+	const programUniformLocations = getUniformLocationsFromProgram(gl, program)
 	const modelContainer = {
 		programAttributeLocations: programAttributeLocations,
+		programUniformLocations: programUniformLocations,
 		...model
 	}
 	console.log("programAttributeLocations", programAttributeLocations)
 
 	// Uniform Locations
-	const u_matrixLoc = gl.getUniformLocation(program, "u_matrix")
-	const textureUniformLocation = gl.getUniformLocation(program, "u_texture")
-	console.log("!!!!!!!!!!!!!!", textureUniformLocation)
+	// const u_matrixLoc = gl.getUniformLocation(program, "u_matrix")
+	// const textureUniformLocation = gl.getUniformLocation(program, "u_texture")
+	// console.log("!!!!!!!!!!!!!!", textureUniformLocation)
 
 	// ########################################################################
 	// 					create buffers w/ attributes for obj
@@ -48,7 +50,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	// ########################################################################
 	setupModelTexture(gl, modelContainer)
 
-	function setupModelTexture(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram> } & typeof model) {
+	function setupModelTexture(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, programUniformLocations: ReturnType<typeof getUniformLocationsFromProgram> } & typeof model) {
 		if (!modelContainer.texture) return
 
 		const texture = gl.createTexture()
@@ -67,7 +69,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
 			gl.generateMipmap(gl.TEXTURE_2D)
 		}
-		gl.uniform1i(textureUniformLocation, 0)
+		gl.uniform1i(modelContainer.programUniformLocations["u_texture"], 0)
 
 		return texture
 	}
@@ -80,7 +82,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	gl.useProgram(program)
 	let transformMatrix = m4.identity()
 	transformMatrix = m4.dot(m4.perspective(Math.PI * 0.6666, 1), m4.rotateY(m4.translate(transformMatrix, 100, 0, 100), 30))
-	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
+	gl.uniformMatrix4fv(modelContainer.programUniformLocations["u_matrix"], true, transformMatrix)
 
 
 
@@ -115,7 +117,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		},
 		draw: () => {
 			transformMatrix = m4.dot(m4.perspective(Math.PI * 0.5, 1), m4.inverse(transformMatrix))
-			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
+			gl.uniformMatrix4fv(modelContainer.programUniformLocations["u_matrix"], true, transformMatrix)
 
 			// Draw
 			gl.drawArrays(gl.TRIANGLES, 0, model.vertexData.a_position.data.length / 3)
@@ -131,7 +133,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 /* 
 	  WEBGL FUNCTIONS
 */
-function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram> } & typeof model) {
+function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, programUniformLocations: ReturnType<typeof getUniformLocationsFromProgram> } & typeof model) {
 	const vao = gl.createVertexArray()
 	if (!vao) throw new Error("ERROR: vao is null!")
 	gl.bindVertexArray(vao)
@@ -154,6 +156,22 @@ function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, 
 		gl.bufferData(gl.ARRAY_BUFFER, new format.type(model.vertexData[name].data), gl.STATIC_DRAW)
 	})
 	return vao
+}
+function getUniformLocationsFromProgram(gl: WebGL2RenderingContext, program: WebGLProgram) {
+	const numberOfUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS)
+	const programUniformLocations: { [name: string]: WebGLUniformLocation } = {}
+	for (let i = 0; i < numberOfUniforms; i++) {
+		const uniform = gl.getActiveUniform(program, i)
+		console.log("uniformName", uniform?.name)
+		if (!uniform?.name) throw new Error("ERROR: model uniform has no name!")
+		const uniformLocation = gl.getUniformLocation(program, uniform.name)
+		console.log("uniformLocation", uniformLocation)
+		if (!uniformLocation) throw new Error("ERROR: uniformLocation null!")
+		programUniformLocations[uniform.name] = uniformLocation
+	}
+	console.log("gl.getProgramParameter(gl.ACTIVE_UNIFORMS)", numberOfUniforms)
+	console.log("programUniformLocations", programUniformLocations)
+	return programUniformLocations
 }
 function getAttributeLocationsFromProgram(gl: WebGL2RenderingContext, program: WebGLProgram) {
 	const numberOfAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES)
