@@ -1,3 +1,5 @@
+import f from "../assets/tex.png"
+
 export const model = {
 	vertexData: {
 
@@ -106,5 +108,6 @@ export const model = {
 		void main(){
 			outColor = texture(u_texture,v_texcoord);
 		}
-	`
+	`,
+	texture: f
 }

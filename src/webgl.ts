@@ -1,6 +1,5 @@
 import { m4 } from "./m4"
-import { model } from "./model/modelL"
-import f from "./assets/tex.png"
+import { model } from "./model/modelPlane"
 
 
 export function createWebglRenderer(canvas: HTMLCanvasElement) {
@@ -31,13 +30,14 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	const programAttributeLocations = getAttributeLocationsFromProgram(gl, program)
 	const modelContainer = {
 		programAttributeLocations: programAttributeLocations,
-		model: model
+		...model
 	}
 	console.log("programAttributeLocations", programAttributeLocations)
 
 	// Uniform Locations
 	const u_matrixLoc = gl.getUniformLocation(program, "u_matrix")
 	const textureUniformLocation = gl.getUniformLocation(program, "u_texture")
+	console.log("!!!!!!!!!!!!!!", textureUniformLocation)
 
 	// ########################################################################
 	// 					create buffers w/ attributes for obj
@@ -46,24 +46,31 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	// ########################################################################
 	// 					textures
 	// ########################################################################
-	const texture = gl.createTexture()
-	gl.activeTexture(gl.TEXTURE0)
-	gl.bindTexture(gl.TEXTURE_2D, texture)
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]))
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)	// <= YOU WILL GET TEXTURE ARTIFACTS TEXTURE_MIN_FILTER is not set
+	setupModelTexture(gl, modelContainer)
 
-	var img = new Image()
-	img.src = f
-	img.onload = () => {
+	function setupModelTexture(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram> } & typeof model) {
+		if (!modelContainer.texture) return
+
+		const texture = gl.createTexture()
 		gl.activeTexture(gl.TEXTURE0)
 		gl.bindTexture(gl.TEXTURE_2D, texture)
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
-		gl.generateMipmap(gl.TEXTURE_2D)
-	}
-	gl.uniform1i(textureUniformLocation, 0)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]))
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)	// <= YOU WILL GET TEXTURE ARTIFACTS TEXTURE_MIN_FILTER is not set
 
+		var img = new Image()
+		img.src = modelContainer.texture
+		img.onload = () => {
+			gl.activeTexture(gl.TEXTURE0)
+			gl.bindTexture(gl.TEXTURE_2D, texture)
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+			gl.generateMipmap(gl.TEXTURE_2D)
+		}
+		gl.uniform1i(textureUniformLocation, 0)
+
+		return texture
+	}
 
 
 	// ########################################################################
@@ -124,17 +131,17 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 /* 
 	  WEBGL FUNCTIONS
 */
-function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, modelContainerParam: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, model: typeof model }) {
+function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram> } & typeof model) {
 	const vao = gl.createVertexArray()
 	if (!vao) throw new Error("ERROR: vao is null!")
 	gl.bindVertexArray(vao)
 
 	// Create list of attribute names using the model's `vertexData`
-	const attributeNameArray = (Object.keys(modelContainerParam.model.vertexData) as Array<keyof typeof modelContainerParam.model.vertexData>)
+	const attributeNameArray = (Object.keys(modelContainer.vertexData) as Array<keyof typeof modelContainer.vertexData>)
 	attributeNameArray.map(name => {
 		// Get vertexAttributeArray params
-		const location = modelContainerParam.programAttributeLocations[name]
-		const format = modelContainerParam.model.vertexData[name].format
+		const location = modelContainer.programAttributeLocations[name]
+		const format = modelContainer.vertexData[name].format
 		const glType = format.type === Float32Array ? gl.FLOAT : format.type === Uint8Array ? gl.UNSIGNED_BYTE : (() => { throw new Error("ERROR: NOT SUPPOSED TYPE WAS USED") })()
 		const normalize = format.normalize
 		const size = format.size
