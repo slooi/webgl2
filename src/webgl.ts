@@ -1,6 +1,6 @@
 import { m4 } from "./m4"
 import { Model } from "./model/model"
-import { model } from "./model/modelL"
+import { model } from "./model/modelPlane"
 
 
 export function createWebglRenderer(canvas: HTMLCanvasElement) {
@@ -50,30 +50,6 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	// 					textures
 	// ########################################################################
 	setupModelTexture(gl, modelContainer)
-
-	function setupModelTexture(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, programUniformLocations: ReturnType<typeof getUniformLocationsFromProgram> } & Model) {
-		if (!modelContainer.texture) return
-
-		const texture = gl.createTexture()
-		gl.activeTexture(gl.TEXTURE0)
-		gl.bindTexture(gl.TEXTURE_2D, texture)
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]))
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)	// <= YOU WILL GET TEXTURE ARTIFACTS TEXTURE_MIN_FILTER is not set
-
-		var img = new Image()
-		img.src = modelContainer.texture
-		img.onload = () => {
-			gl.activeTexture(gl.TEXTURE0)
-			gl.bindTexture(gl.TEXTURE_2D, texture)
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
-			gl.generateMipmap(gl.TEXTURE_2D)
-		}
-		gl.uniform1i(modelContainer.programUniformLocations["u_texture"], 0)
-
-		return texture
-	}
 
 
 	// ########################################################################
@@ -134,6 +110,30 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 /* 
 	  WEBGL FUNCTIONS
 */
+
+function setupModelTexture(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, programUniformLocations: ReturnType<typeof getUniformLocationsFromProgram> } & Model) {
+	if (!modelContainer.texture) return
+
+	const texture = gl.createTexture()
+	gl.activeTexture(gl.TEXTURE0)
+	gl.bindTexture(gl.TEXTURE_2D, texture)
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]))
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)	// <= YOU WILL GET TEXTURE ARTIFACTS TEXTURE_MIN_FILTER is not set
+
+	var img = new Image()
+	img.src = modelContainer.texture
+	img.onload = () => {
+		gl.activeTexture(gl.TEXTURE0)
+		gl.bindTexture(gl.TEXTURE_2D, texture)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+		gl.generateMipmap(gl.TEXTURE_2D)
+	}
+	gl.uniform1i(modelContainer.programUniformLocations["u_texture"], 0)
+
+	return texture
+}
 function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, programUniformLocations: ReturnType<typeof getUniformLocationsFromProgram> } & Model) {
 	const vao = gl.createVertexArray()
 	if (!vao) throw new Error("ERROR: vao is null!")
