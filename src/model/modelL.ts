@@ -191,7 +191,7 @@ export const model = {
 
 
 		void main(){
-			outColor = outColor;
+			outColor = v_color;
 		}
 	`
 }

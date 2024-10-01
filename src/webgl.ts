@@ -1,5 +1,5 @@
 import { m4 } from "./m4"
-import { model } from "./model/modelPlane"
+import { model } from "./model/modelL"
 import f from "./assets/tex.png"
 
 
