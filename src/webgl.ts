@@ -5,8 +5,6 @@ import f from "./assets/tex.png"
 
 export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	console.log("createWebglRenderer was called!")
-
-
 	// ########################################################################
 	// 					init canvas/gl
 	// ########################################################################
@@ -30,54 +28,20 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	const program = createProgram(gl, model.vs, model.fs)
 
 	// Location
-	function getAttributeLocationsFromProgram() {
-		const numberOfAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES)
-		const programAttributeLocations: { [name: string]: number } = {}
-		for (let i = 0; i < numberOfAttributes; i++) {
-			const attribute = gl.getActiveAttrib(program, i)
-			console.log("attributeName", attribute?.name)
-			if (!attribute?.name) throw new Error("ERROR: model attribute has no name!")
-			programAttributeLocations[attribute.name] = gl.getAttribLocation(program, attribute.name)
-		}
-		console.log("gl.getProgramParameter(gl.ACTIVE_ATTRIBUTES)", numberOfAttributes)
-		return programAttributeLocations
-	}
-	const programAttributeLocations = getAttributeLocationsFromProgram()
+	const programAttributeLocations = getAttributeLocationsFromProgram(gl, program)
 	const modelContainer = {
 		programAttributeLocations: programAttributeLocations,
 		model: model
 	}
 	console.log("programAttributeLocations", programAttributeLocations)
 
+	// Uniform Locations
 	const u_matrixLoc = gl.getUniformLocation(program, "u_matrix")
 	const textureUniformLocation = gl.getUniformLocation(program, "u_texture")
 
-	setupProgramVertexAttributeArrayAndBuffers(gl, modelContainer)
-
-	function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, modelContainerParam: typeof modelContainer) {
-		const vao = gl.createVertexArray()
-		gl.bindVertexArray(vao)
-
-		const attributeNameArray = (Object.keys(modelContainerParam.model.vertexData) as Array<keyof typeof modelContainerParam.model.vertexData>)
-		attributeNameArray.map(name => {
-			// Get vertexAttributeArray params
-			const location = modelContainerParam.programAttributeLocations[name]
-			const format = modelContainerParam.model.vertexData[name].format
-			const glType = format.type === Float32Array ? gl.FLOAT : format.type === Uint8Array ? gl.UNSIGNED_BYTE : (() => { throw new Error("ERROR: NOT SUPPOSED TYPE WAS USED") })()
-			const normalize = format.normalize
-			const size = format.size
-
-			// WEBGL INIT
-			const buffer = gl.createBuffer()
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-			gl.vertexAttribPointer(location, size, glType, normalize, 0, 0)
-			gl.enableVertexAttribArray(location)
-			gl.bufferData(gl.ARRAY_BUFFER, new format.type(model.vertexData[name].data), gl.STATIC_DRAW)
-		})
-	}
 	// ########################################################################
 	// 					create buffers w/ attributes for obj
-	// ########################################################################
+	const vao = setupProgramVertexAttributeArrayAndBuffers(gl, modelContainer)
 
 	// ########################################################################
 	// 					textures
@@ -98,25 +62,15 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
 		gl.generateMipmap(gl.TEXTURE_2D)
 	}
-	console.log("!!!!!!", textureUniformLocation)
 	gl.uniform1i(textureUniformLocation, 0)
-	console.log("yaya")
 
 
-	// ########################################################################
-	// 					init data for obj
-	// ########################################################################
-	// Buffer
-	const positions = model.vertexData.a_position
-	gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
 	// ########################################################################
 	// 					use program (for uniforms + what shader? to use) + use program's uniforms
 	// ########################################################################
 	// program use
-	// gl.useProgram(program)
-	console.log("!!!!!!", u_matrixLoc)
-
+	gl.useProgram(program)
 	let transformMatrix = m4.identity()
 	transformMatrix = m4.dot(m4.perspective(Math.PI * 0.6666, 1), m4.rotateY(m4.translate(transformMatrix, 100, 0, 100), 30))
 	gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
@@ -136,7 +90,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	// ########################################################################
 	// 						DRAW :D
 	// ########################################################################
-	gl.drawArrays(gl.TRIANGLES, 0, positions.data.length / 3)
+	gl.drawArrays(gl.TRIANGLES, 0, model.vertexData.a_position.data.length / 3)
 
 
 	// ########################################################################
@@ -157,7 +111,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 			gl.uniformMatrix4fv(u_matrixLoc, true, transformMatrix)
 
 			// Draw
-			gl.drawArrays(gl.TRIANGLES, 0, positions.data.length / 3)
+			gl.drawArrays(gl.TRIANGLES, 0, model.vertexData.a_position.data.length / 3)
 		},
 		scale: (sx: number, sy: number, sz: number) => transformMatrix = m4.dot(m4.scaling(sx, sy, sz), transformMatrix),
 		translate: (tx: number, ty: number, tz: number) => transformMatrix = m4.dot(m4.translation(tx, ty, tz), transformMatrix),
@@ -170,6 +124,42 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 /* 
 	  WEBGL FUNCTIONS
 */
+function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, modelContainerParam: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, model: typeof model }) {
+	const vao = gl.createVertexArray()
+	if (!vao) throw new Error("ERROR: vao is null!")
+	gl.bindVertexArray(vao)
+
+	// Create list of attribute names using the model's `vertexData`
+	const attributeNameArray = (Object.keys(modelContainerParam.model.vertexData) as Array<keyof typeof modelContainerParam.model.vertexData>)
+	attributeNameArray.map(name => {
+		// Get vertexAttributeArray params
+		const location = modelContainerParam.programAttributeLocations[name]
+		const format = modelContainerParam.model.vertexData[name].format
+		const glType = format.type === Float32Array ? gl.FLOAT : format.type === Uint8Array ? gl.UNSIGNED_BYTE : (() => { throw new Error("ERROR: NOT SUPPOSED TYPE WAS USED") })()
+		const normalize = format.normalize
+		const size = format.size
+
+		// WEBGL INIT
+		const buffer = gl.createBuffer()
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+		gl.vertexAttribPointer(location, size, glType, normalize, 0, 0)
+		gl.enableVertexAttribArray(location)
+		gl.bufferData(gl.ARRAY_BUFFER, new format.type(model.vertexData[name].data), gl.STATIC_DRAW)
+	})
+	return vao
+}
+function getAttributeLocationsFromProgram(gl: WebGL2RenderingContext, program: WebGLProgram) {
+	const numberOfAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES)
+	const programAttributeLocations: { [name: string]: number } = {}
+	for (let i = 0; i < numberOfAttributes; i++) {
+		const attribute = gl.getActiveAttrib(program, i)
+		console.log("attributeName", attribute?.name)
+		if (!attribute?.name) throw new Error("ERROR: model attribute has no name!")
+		programAttributeLocations[attribute.name] = gl.getAttribLocation(program, attribute.name)
+	}
+	console.log("gl.getProgramParameter(gl.ACTIVE_ATTRIBUTES)", numberOfAttributes)
+	return programAttributeLocations
+}
 function getWebglContext(canvas: HTMLCanvasElement) {
 	const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true }) // !@#!@#!@# remove later maybe
 	if (!gl) throw new Error("ss")
