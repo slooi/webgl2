@@ -77,5 +77,38 @@ WebGL is concerned, whether or not a triangle is considered to be going clockwis
 - REMEMBER!!!!! WHEN CALCULATING THE adjugate, the there is a transpose!!!!! A_ij = (-1)^(i+j) |M_ji| <= I FORGOT THIS!
 
 
+# TEXTURES
+- !@#!@#!@# gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)	// <= YOU WILL GET TEXTURE ARTIFACTS TEXTURE_MIN_FILTER is not set
+- !@#!@#!@# UNIFORMS ARE 1000% DEPENDENT ON THE PROGRAM!!!!!!!!!!@#!@#!@# BECAUSE OF THIS, YOU ALWAYS HAVE TO CALL gl.useProgram BEFORE setting uniforms!!! EG:
+```ts
+	gl.useProgram(program)
+	gl.uniform1i(textureUniformLocation, 1)
+```
+- Image texture not appearing? I screen black? Have you made sure that the gl.drawArrays is called AFTER the img.onload code has run? Make 100% sure that the img.onload texture code has run before calling gl.drawArrays. Whenever using textures, ALWAYS CHECK THAT TEXTURE HAS LOAED FIRST! In fact you should 1) Load resources, 2) THEN make texture
+- Get texture size using glsl + get pixel:   vec2 onePixel = 1.0/vec2(textureSize(u_Texture,0));
+- If you are only getting white after applying a kernel fliter, check that you aren't doing the below (you need ALPHA!!!):
+```GLSL
+  color = (
+     texture(u_Texture,v_Texcoord+onePixel*vec2(-1,-1))*u_Kernel[0]*1.0
+    )/9.0;
+```
+
+If you don't want to supply an image, you can supply null
+```ts
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+```
+
+- Remember to set the width and height of the texture if you're going to use renderbuffer!
+```ts
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, initWidth, initHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+```
+
+
+# Pro/Cons of classes compared to factory function
+- can NOT do hoisting with classes unlike factory functions
+## Pro classes
+## Pro factory function
+-
+
 # question
 is there chance to get undefined/nan due to dividing by 0?
