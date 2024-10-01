@@ -1,5 +1,5 @@
 import { m4 } from "./m4"
-import { Model } from "./model/model"
+import { Model } from "./model/Model"
 import { model } from "./model/modelPlane"
 
 
@@ -36,11 +36,6 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 		...model
 	}
 	console.log("programAttributeLocations", programAttributeLocations)
-
-	// Uniform Locations
-	// const u_matrixLoc = gl.getUniformLocation(program, "u_matrix")
-	// const textureUniformLocation = gl.getUniformLocation(program, "u_texture")
-	// console.log("!!!!!!!!!!!!!!", textureUniformLocation)
 
 	// ########################################################################
 	// 					create buffers w/ attributes for obj

@@ -1,5 +1,5 @@
 import f from "../assets/tex.png"
-import { Model } from "./model"
+import { Model } from "./Model"
 
 export const model: Model = {
 	vertexData: {
