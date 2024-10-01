@@ -1,6 +1,7 @@
 import f from "../assets/tex.png"
+import { Model } from "./model"
 
-export const model = {
+export const model: Model = {
 	vertexData: {
 
 		a_position: {

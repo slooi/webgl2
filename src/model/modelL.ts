@@ -1,4 +1,6 @@
-export const model = {
+import { Model } from "./model";
+
+export const model: Model = {
 	vertexData: {
 
 		a_position: {

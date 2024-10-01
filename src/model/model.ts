@@ -6,12 +6,12 @@ export type Model = {
 	},
 	vs: string,
 	fs: string,
-	texture: string
+	texture?: string
 }
 export type Vertex = {
 	format: {
 		size: number,
-		type: Float32Array | Uint8Array,
+		type: Float32ArrayConstructor | Uint8ArrayConstructor,
 		normalize: boolean
 	},
 	data: number[]

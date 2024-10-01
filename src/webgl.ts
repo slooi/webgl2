@@ -1,5 +1,6 @@
 import { m4 } from "./m4"
-import { model } from "./model/modelPlane"
+import { Model } from "./model/model"
+import { model } from "./model/modelL"
 
 
 export function createWebglRenderer(canvas: HTMLCanvasElement) {
@@ -50,7 +51,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 	// ########################################################################
 	setupModelTexture(gl, modelContainer)
 
-	function setupModelTexture(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, programUniformLocations: ReturnType<typeof getUniformLocationsFromProgram> } & typeof model) {
+	function setupModelTexture(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, programUniformLocations: ReturnType<typeof getUniformLocationsFromProgram> } & Model) {
 		if (!modelContainer.texture) return
 
 		const texture = gl.createTexture()
@@ -133,7 +134,7 @@ export function createWebglRenderer(canvas: HTMLCanvasElement) {
 /* 
 	  WEBGL FUNCTIONS
 */
-function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, programUniformLocations: ReturnType<typeof getUniformLocationsFromProgram> } & typeof model) {
+function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, programUniformLocations: ReturnType<typeof getUniformLocationsFromProgram> } & Model) {
 	const vao = gl.createVertexArray()
 	if (!vao) throw new Error("ERROR: vao is null!")
 	gl.bindVertexArray(vao)
@@ -141,9 +142,11 @@ function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, 
 	// Create list of attribute names using the model's `vertexData`
 	const attributeNameArray = (Object.keys(modelContainer.vertexData) as Array<keyof typeof modelContainer.vertexData>)
 	attributeNameArray.map(name => {
+		const vertexAttribute = modelContainer.vertexData[name]
+		if (!vertexAttribute) throw new Error("ERROR: this vertdata does NOT exist!")
 		// Get vertexAttributeArray params
 		const location = modelContainer.programAttributeLocations[name]
-		const format = modelContainer.vertexData[name].format
+		const format = vertexAttribute.format
 		const glType = format.type === Float32Array ? gl.FLOAT : format.type === Uint8Array ? gl.UNSIGNED_BYTE : (() => { throw new Error("ERROR: NOT SUPPOSED TYPE WAS USED") })()
 		const normalize = format.normalize
 		const size = format.size
@@ -153,7 +156,7 @@ function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, 
 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 		gl.vertexAttribPointer(location, size, glType, normalize, 0, 0)
 		gl.enableVertexAttribArray(location)
-		gl.bufferData(gl.ARRAY_BUFFER, new format.type(model.vertexData[name].data), gl.STATIC_DRAW)
+		gl.bufferData(gl.ARRAY_BUFFER, new format.type(vertexAttribute.data), gl.STATIC_DRAW)
 	})
 	return vao
 }
