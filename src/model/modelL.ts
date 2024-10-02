@@ -1,4 +1,4 @@
-import { Model } from "./Model2";
+import { Model } from "./Model";
 
 export const model: Model = {
 	vertexData: {
