@@ -129,6 +129,48 @@ gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_
  ]
 
 
+# Always continuously build to your target platform from day 1!
+- Found that build does not work on github pages despite working on pc. Also found that it didn't work on mobile either.
+
+# Differences between PC(windows+firefox) and mobile(android firefox & android chrome)
+## Example
+`#version 300 es
+	in vec4 a_position;
+	in vec4 a_color;
+	in vec2 a_texcoord;
+
+	uniform mat4 u_matrix;
+
+	out vec4 v_color;
+	out vec2 v_texcoord;
+
+	void main(){
+		v_color = a_color;
+		v_texcoord = a_texcoord;
+		gl_Position = u_matrix * a_position;
+	}
+`
+`#version 300 es
+	precision highp float;
+
+	in vec4 v_color;
+	in vec2 v_texcoord;
+
+	out vec4 outColor; 
+
+	uniform sampler2D u_texture;
+
+	void main(){
+		outColor = texture(u_texture,v_texcoord);
+	}
+`
+PC
+- The above glsl code will have return `3` for gl.getProgramParameter(program,gl.ACTIVE_ATTRIBUTES)
+MOBILE
+- The above glsl code will have return `2` for gl.getProgramParameter(program,gl.ACTIVE_ATTRIBUTES)
+- Mobile IGNORES attributes if they are not used! Like in the fragment shader `v_color` is optimized out.
+## LESSON
+- Do NOT use the model data as the source of truth for the vertexData!!! Use the `gl.getProgramParameter(program,gl.ACTIVE_ATTRIBUTES)` as the source of truth!
 
 # question
 is there chance to get undefined/nan due to dividing by 0?
