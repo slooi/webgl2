@@ -1,5 +1,5 @@
 import { m4 } from "./m4"
-import { Model } from "./model/Model"
+import { Model } from "./model/Model2"
 import { model } from "./model/modelPlane"
 
 export function createWebglRenderer(canvas: HTMLCanvasElement) {
