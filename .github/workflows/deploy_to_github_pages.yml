@@ -19,14 +19,17 @@ jobs:
         with:
           node-version: "20.11"
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
 
       - name: Remove vite.svg
         run: rm ./public/vite.svg
 
       - name: Build
-        run: npm run build.ghpages
+        run: pnpm run build.ghpages
 
       - name: Deploy to GitHub Pages
         run: |
