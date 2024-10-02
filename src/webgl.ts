@@ -2,110 +2,113 @@ import { m4 } from "./m4"
 import { Model } from "./model/Model"
 import { model } from "./model/modelPlane"
 
-
 export function createWebglRenderer(canvas: HTMLCanvasElement) {
-	console.log("createWebglRenderer was called!")
-	// ########################################################################
-	// 					init canvas/gl
-	// ########################################################################
-	// canvas
-	// const canvas = document.querySelector("canvas") as HTMLCanvasElement
-	canvas.width = 300 * 2 //window.innerWidth
-	canvas.height = 300 * 2 // window.innerHeight
+	try {
+		console.log("createWebglRenderer was called!")
+		// ########################################################################
+		// 					init canvas/gl
+		// ########################################################################
+		// canvas
+		// const canvas = document.querySelector("canvas") as HTMLCanvasElement
+		canvas.width = 300 * 2 //window.innerWidth
+		canvas.height = 300 * 2 // window.innerHeight
 
-	canvas.style.width = `${canvas.width}px`
-	canvas.style.height = `${canvas.height}px`
+		canvas.style.width = `${canvas.width}px`
+		canvas.style.height = `${canvas.height}px`
 
-	// gl
-	let gl = getWebglContext(canvas)
-
-
-
-	// ########################################################################
-	// 					init program/material for obj
-	// ########################################################################
-	// Program
-	const program = createProgram(gl, model.vs, model.fs)
-
-	// Location
-	const programAttributeLocations = getAttributeLocationsFromProgram(gl, program)
-	const programUniformLocations = getUniformLocationsFromProgram(gl, program)
-	const modelContainer = {
-		programAttributeLocations: programAttributeLocations,
-		programUniformLocations: programUniformLocations,
-		...model
-	}
-	const u_matrix = modelContainer.programUniformLocations["u_matrix"]
-	if (!u_matrix) throw new Error("ERROR: u_matrix not defined!")
-	console.log("programAttributeLocations", programAttributeLocations)
-
-	// ########################################################################
-	// 					create buffers w/ attributes for obj
-	const vao = setupProgramVertexAttributeArrayAndBuffers(gl, modelContainer)
-
-	// ########################################################################
-	// 					textures
-	// ########################################################################
-	setupModelTexture(gl, modelContainer)
-
-
-	// ########################################################################
-	// 					use program (for uniforms + what shader? to use) + use program's uniforms
-	// ########################################################################
-	// program use
-	gl.useProgram(program)
-	let transformMatrix = m4.identity()
-	transformMatrix = m4.dot(m4.perspective(Math.PI * 0.6666, 1), m4.rotateY(m4.translate(transformMatrix, 100, 0, 100), 30))
-	gl.uniformMatrix4fv(u_matrix, true, transformMatrix)
+		// gl
+		let gl = getWebglContext(canvas)
 
 
 
-	// ########################################################################
-	// 						setup global? state
-	// ########################################################################
-	gl.clearColor(187 / 255, 227 / 255, 248 / 255, 1)
-	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-	gl.enable(gl.CULL_FACE)
-	gl.enable(gl.DEPTH_TEST)
+		// ########################################################################
+		// 					init program/material for obj
+		// ########################################################################
+		// Program
+		const program = createProgram(gl, model.vs, model.fs)
+
+		// Location
+		const programAttributeLocations = getAttributeLocationsFromProgram(gl, program)
+		const programUniformLocations = getUniformLocationsFromProgram(gl, program)
+		const modelContainer = {
+			programAttributeLocations: programAttributeLocations,
+			programUniformLocations: programUniformLocations,
+			...model
+		}
+		const u_matrix = modelContainer.programUniformLocations["u_matrix"]
+		if (!u_matrix) throw new Error("ERROR: u_matrix not defined!")
+		console.log("programAttributeLocations", programAttributeLocations)
+
+		// ########################################################################
+		// 					create buffers w/ attributes for obj
+		const vao = setupProgramVertexAttributeArrayAndBuffers(gl, modelContainer)
+
+		// ########################################################################
+		// 					textures
+		// ########################################################################
+		setupModelTexture(gl, modelContainer)
+
+
+		// ########################################################################
+		// 					use program (for uniforms + what shader? to use) + use program's uniforms
+		// ########################################################################
+		// program use
+		gl.useProgram(program)
+		let transformMatrix = m4.identity()
+		transformMatrix = m4.dot(m4.perspective(Math.PI * 0.6666, 1), m4.rotateY(m4.translate(transformMatrix, 100, 0, 100), 30))
+		gl.uniformMatrix4fv(u_matrix, true, transformMatrix)
 
 
 
-	// ########################################################################
-	// 						DRAW :D
-	// ########################################################################
-	gl.drawArrays(gl.TRIANGLES, 0, model.vertexData.a_position.data.length / 3)
+		// ########################################################################
+		// 						setup global? state
+		// ########################################################################
+		gl.clearColor(187 / 255, 227 / 255, 248 / 255, 1)
+		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
+		gl.enable(gl.CULL_FACE)
+		gl.enable(gl.DEPTH_TEST)
 
 
-	// ########################################################################
-	// 					clean up + return
-	// ########################################################################
-	// Need to reset identity so next render doesn't contain previous render's transforms
-	transformMatrix = m4.identity()
-	return {
-		clear: () => {
-			// Reset matrix
-			gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
 
-			// Reset transform
-			transformMatrix = m4.identity()
-		},
-		draw: () => {
-			transformMatrix = m4.dot(m4.perspective(Math.PI * 0.5, 1), m4.inverse(transformMatrix))
-			gl.uniformMatrix4fv(u_matrix, true, transformMatrix)
+		// ########################################################################
+		// 						DRAW :D
+		// ########################################################################
+		gl.drawArrays(gl.TRIANGLES, 0, model.vertexData.a_position.data.length / 3)
 
-			// Draw
-			gl.drawArrays(gl.TRIANGLES, 0, model.vertexData.a_position.data.length / 3)
-		},
-		scale: (sx: number, sy: number, sz: number) => transformMatrix = m4.dot(m4.scaling(sx, sy, sz), transformMatrix),
-		translate: (tx: number, ty: number, tz: number) => transformMatrix = m4.dot(m4.translation(tx, ty, tz), transformMatrix),
-		rotateX: (degreeX: number) => transformMatrix = m4.dot(m4.rotationX(degreeX), transformMatrix),
-		rotateY: (degreeY: number) => transformMatrix = m4.dot(m4.rotationY(degreeY), transformMatrix),
-		rotateZ: (degreeZ: number) => transformMatrix = m4.dot(m4.rotationZ(degreeZ), transformMatrix)
+
+		// ########################################################################
+		// 					clean up + return
+		// ########################################################################
+		// Need to reset identity so next render doesn't contain previous render's transforms
+		transformMatrix = m4.identity()
+		return {
+			clear: () => {
+				// Reset matrix
+				gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
+
+				// Reset transform
+				transformMatrix = m4.identity()
+			},
+			draw: () => {
+				transformMatrix = m4.dot(m4.perspective(Math.PI * 0.5, 1), m4.inverse(transformMatrix))
+				gl.uniformMatrix4fv(u_matrix, true, transformMatrix)
+
+				// Draw
+				gl.drawArrays(gl.TRIANGLES, 0, model.vertexData.a_position.data.length / 3)
+			},
+			scale: (sx: number, sy: number, sz: number) => transformMatrix = m4.dot(m4.scaling(sx, sy, sz), transformMatrix),
+			translate: (tx: number, ty: number, tz: number) => transformMatrix = m4.dot(m4.translation(tx, ty, tz), transformMatrix),
+			rotateX: (degreeX: number) => transformMatrix = m4.dot(m4.rotationX(degreeX), transformMatrix),
+			rotateY: (degreeY: number) => transformMatrix = m4.dot(m4.rotationY(degreeY), transformMatrix),
+			rotateZ: (degreeZ: number) => transformMatrix = m4.dot(m4.rotationZ(degreeZ), transformMatrix)
+		}
+	} catch (err) {
+		document.body.innerHTML = `${err}`
 	}
 }
 
 /* 
-	  WEBGL FUNCTIONS
+	WEBGL FUNCTIONS
 */
 
 function setupModelTexture(gl: WebGL2RenderingContext, modelContainer: { programAttributeLocations: ReturnType<typeof getAttributeLocationsFromProgram>, programUniformLocations: ReturnType<typeof getUniformLocationsFromProgram> } & Model) {
@@ -140,14 +143,16 @@ function setupProgramVertexAttributeArrayAndBuffers(gl: WebGL2RenderingContext, 
 	gl.bindVertexArray(vao)
 
 	// Create list of attribute names using the model's `vertexData`
-	const attributeNameArray = (Object.keys(modelContainer.vertexData) as Array<keyof typeof modelContainer.vertexData>)
-	attributeNameArray.map(name => {
-		const vertexAttribute = modelContainer.vertexData[name]
-		if (!vertexAttribute) throw new Error("ERROR: this vertdata does NOT exist!")
+	const attributeNameArray = Object.entries(modelContainer.programAttributeLocations)
+	attributeNameArray.map(([name, location]) => {
+		const potentiallyUnsafeSpecificVertexAttribute = modelContainer.vertexData[name as keyof typeof modelContainer.vertexData]
+		if (!potentiallyUnsafeSpecificVertexAttribute) throw new Error("ERROR: potentiallyUnsafeSpecificVertexAttribute is undefined!")
+
+		const vertexAttribute = potentiallyUnsafeSpecificVertexAttribute
+
 		// Get vertexAttributeArray params
-		const location = modelContainer.programAttributeLocations[name]
 		console.log("location", location)
-		if (location === undefined) throw new Error("ERROR: location is not defined!")
+		if (location === undefined) throw new Error(`ERROR: location is not defined! INFO: Location: ${location} name: ${name}`)
 		const format = vertexAttribute.format
 		const glType = format.type === Float32Array ? gl.FLOAT : format.type === Uint8Array ? gl.UNSIGNED_BYTE : (() => { throw new Error("ERROR: NOT SUPPOSED TYPE WAS USED") })()
 		const normalize = format.normalize
@@ -184,6 +189,7 @@ function getAttributeLocationsFromProgram(gl: WebGL2RenderingContext, program: W
 	for (let i = 0; i < numberOfAttributes; i++) {
 		const attribute = gl.getActiveAttrib(program, i)
 		console.log("attributeName", attribute?.name)
+		// setTimeout(() => { document.body.prepend(document.createElement("p").innerHTML = `${i}${attribute?.name}`) }, 0)
 		if (!attribute?.name) throw new Error("ERROR: model attribute has no name!")
 		programAttributeLocations[attribute.name] = gl.getAttribLocation(program, attribute.name)
 	}

@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/userinputhandler.ts","./src/m4.ts","./src/main.tsx","./src/tests.test.ts","./src/vite-env.d.ts","./src/webgl.ts"],"version":"5.6.2"}
+{"root":["./src/app.tsx","./src/userinputhandler.ts","./src/m4.ts","./src/main.tsx","./src/tests.test.ts","./src/vite-env.d.ts","./src/webgl.ts","./src/model/model.ts","./src/model/modell.ts","./src/model/modelplane.ts"],"version":"5.6.2"}
