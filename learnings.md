@@ -174,3 +174,65 @@ MOBILE
 
 # question
 is there chance to get undefined/nan due to dividing by 0?
+
+# QUIZ
+
+	
+
+QUIZ: What happens?
+	const texture = gl.createTexture()
+	gl.activeTexture(gl.TEXTURE0)
+	gl.bindTexture(gl.TEXTURE_2D, texture)
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]))
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)	// <= YOU WILL GET TEXTURE ARTIFACTS TEXTURE_MIN_FILTER is not set
+
+	var img = new Image()
+	img.src = f
+	img.onload = () => {
+		gl.activeTexture(gl.TEXTURE0 + 1)
+		gl.bindTexture(gl.TEXTURE_2D, texture)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+		gl.generateMipmap(gl.TEXTURE_2D)
+	}
+	gl.uniform1i(textureUniformLocation, 0)
+
+
+ANSWER: Renders blue, then renders img texture once image loads. 
+EXPLANATION: Ultimately, only the texture bound at texture unit 0 determines the texture the shader uses. So even though we've set the activeTexture to +1, we've called bindTexture(gl.TEXTURE_2D, texture), which binds the
+texture buffer holding the blue pixel, which is then replaced with the texture image due to texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img). So both texture unit 0 & 1 point to the same texture, which
+has ben updated to hold the texture image.
+
+
+
+
+
+
+
+
+
+QUIZ: What happens?
+
+	const texture = gl.createTexture()
+	gl.activeTexture(gl.TEXTURE0)
+	gl.bindTexture(gl.TEXTURE_2D, texture)
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]))
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)	// <= YOU WILL GET TEXTURE ARTIFACTS TEXTURE_MIN_FILTER is not set
+
+	var img = new Image()
+	img.src = f
+	img.onload = () => {
+		gl.activeTexture(gl.TEXTURE0 + 1)
+		const texture = gl.createTexture()		// !@#!@#!@# NEWLINE
+		gl.bindTexture(gl.TEXTURE_2D, texture)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+		gl.generateMipmap(gl.TEXTURE_2D)
+	}
+	gl.uniform1i(textureUniformLocation, 0) // This indicates that the var at `textureUniformLocation` should use texture unit 0
+
+ANSWER: Will display blue.
+EXPLANATION: The gl.createTexture will mean there will be a total of 2 textures. one exists on texture unit 0. another will exist on texture unit 1. Because the TEXTURE_UNIT_1 has a different texture than TEXTURE_UNIT 0, 
+the updates in the onload function only affect the new texture in TEX_UNIT_1.
